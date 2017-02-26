@@ -1,0 +1,29 @@
+{
+  "name": "quick-bench-server",
+  "version": "1.0.0",
+  "description": "Server side of Quick-Bench",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "gitolite3@ns377538.ip-91-121-210.eu:quick-bench-server"
+  },
+  "keywords": [
+    "C++",
+    "benchmark"
+  ],
+  "author": "Fred Tingaud",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.16.1",
+    "child_process": "^1.0.2",
+    "express": "^4.14.1",
+    "fs": "0.0.1-security",
+    "multer": "^1.3.0"
+  }
+}
