@@ -1,4 +1,5 @@
 var express = require('express')
+var cors = require('cors')
 var fs = require('fs');
 var app = express();
 var exec = require('child_process').exec;
@@ -8,6 +9,7 @@ var multer = require('multer');
 var upload = multer();
 
 app.use(bodyParser.json());
+app.use(cors());
 
 function write(fileName, code) {
    return new Promise((resolve, reject) => {
