@@ -27,7 +27,7 @@ function execute(fileName) {
     return new Promise((resolve, reject) => {
 	exec("./run-docker " + fileName, function(err, stdout, stderr) {
 	    if (err) {
-		reject(err);
+		reject(stdout);
 	    } else if (stderr){
 		reject(stderr);
 	    } else {
@@ -43,7 +43,7 @@ function treat(code) {
 }
 
 app.post('/',  upload.array(), function(req, res) {
-    Promise.resolve(treat(req.body.code)).then((done)=> res.json(done));
+    Promise.resolve(treat(req.body.code)).then((done)=> res.json({result: done})).catch((err)=> res.json({error: err}));
 })
 
 app.listen(3000, function() {
