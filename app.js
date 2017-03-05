@@ -3,9 +3,10 @@ var cors = require('cors')
 var fs = require('fs');
 var app = express();
 var exec = require('child_process').exec;
-
+var sha1 = require('sha1');
 var bodyParser = require('body-parser');
 var multer = require('multer');
+
 var upload = multer();
 
 app.use(bodyParser.json());
@@ -38,7 +39,7 @@ function execute(fileName) {
 }
 
 function treat(code) {
-    var fileName = "/tmp/test";
+    var fileName = '/tmp/' + sha1(code);
     return Promise.resolve(write(fileName, code)).then(() => execute(fileName));
 }
 
