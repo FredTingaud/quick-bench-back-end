@@ -32,7 +32,7 @@ function execute(fileName) {
 	    } else if (stderr){
 		reject(stderr);
 	    } else {
-		resolve(stdout);
+		resolve({res:fs.readFileSync(fileName + '.out'), stdout: stdout});
 	    }
 	});
     });
@@ -44,7 +44,7 @@ function treat(code) {
 }
 
 app.post('/',  upload.array(), function(req, res) {
-    Promise.resolve(treat(req.body.code)).then((done)=> res.json({result: done})).catch((err)=> res.json({error: err}));
+    Promise.resolve(treat(req.body.code)).then((done) => res.json({result: JSON.parse(done.res), message: done.stdout})).catch((err) => res.json({message: err}));
 })
 
 app.listen(3000, function() {
