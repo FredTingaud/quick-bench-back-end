@@ -25,8 +25,9 @@ function write(fileName, code) {
 }
 
 function execute(fileName) {
+    let options = {timeout: 30000}
     return new Promise((resolve, reject) => {
-	exec("./run-docker " + fileName, function(err, stdout, stderr) {
+	exec("./run-docker " + fileName, options, function(err, stdout, stderr) {
 	    if (err) {
 		reject(stdout);
 	    } else if (stderr){
