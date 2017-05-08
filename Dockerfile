@@ -5,15 +5,10 @@ MAINTAINER Fred Tingaud <ftingaud@hotmail.com>
 USER root
 
 RUN apt-get update && apt-get -y install \
-   wget \
-   curl \
    git \
    cmake \
-   zsh \
    clang-3.8 \
-   build-essential \
    libfreetype6-dev \
-   emacs \
    && rm -rf /var/lib/apt/lists/*
 
 ENV CC clang-3.8
@@ -27,7 +22,7 @@ RUN cd /usr/src/ \
     && make -j12 \
     && make install
 
-RUN useradd -m -s /bin/zsh -N -u 1000 builder
+RUN useradd -m -s /sbin/nologin -N -u 1000 builder
 
 USER builder
 
