@@ -35,7 +35,7 @@ function execute(fileName) {
 	exec("./run-docker " + fileName, options, function(err, stdout, stderr) {
 	    if (err) {
 		exec("./kill-docker " + fileName);
-		reject(stdout);
+		reject("\u001b[0m\u001b[0;1;31mInternal error or timeout\u001b[0m\u001b[1m<br>" + stdout);
 	    } else if (stderr){
 		reject(stderr);
 	    } else {
