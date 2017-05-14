@@ -27,10 +27,14 @@ function write(fileName, code) {
 }
 
 function execute(fileName) {
-    let options = {timeout: 30000}
+    let options = {
+        timeout: 30000,
+        killSignal: 'SIGKILL'
+    }
     return new Promise((resolve, reject) => {
 	exec("./run-docker " + fileName, options, function(err, stdout, stderr) {
 	    if (err) {
+		exec("./kill-docker " + fileName);
 		reject(stdout);
 	    } else if (stderr){
 		reject(stderr);

@@ -1,0 +1,8 @@
+#!/bin/bash
+
+FILE=$1.pid
+
+if [ -f $FILE ]; then
+    docker kill `cat $FILE`
+    rm $FILE
+fi

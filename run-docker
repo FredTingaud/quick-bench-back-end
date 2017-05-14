@@ -4,4 +4,4 @@ FILE=`realpath $1`
 OUTFILE=$FILE.out
 touch $OUTFILE
 chmod 666 $OUTFILE
-docker run --rm -v $FILE:/home/builder/bench-file.cpp --memory="100m" --cpu-period=100000 --cpu-quota=25000 -v $OUTFILE:/home/builder/bench.out -t bench-runner /bin/bash -c "clang++-3.8 -std=c++1z bench-file.cpp -o bench /usr/local/lib/libbenchmark.a -lpthread && ./bench --benchmark_format=json --benchmark_out=/home/builder/bench.out"
+exec docker run --rm -v $FILE:/home/builder/bench-file.cpp --memory="100m" --cpu-period=100000 --cpu-quota=25000 --cidfile=$FILE.pid -v $OUTFILE:/home/builder/bench.out -t bench-runner /bin/bash -c "clang++-3.8 -std=c++1z bench-file.cpp -o bench /usr/local/lib/libbenchmark.a -lpthread && ./bench --benchmark_format=json --benchmark_out=/home/builder/bench.out"
