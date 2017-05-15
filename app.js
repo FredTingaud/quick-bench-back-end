@@ -32,16 +32,14 @@ function execute(fileName) {
         killSignal: 'SIGKILL'
     }
     return new Promise((resolve, reject) => {
-	exec("./run-docker " + fileName, options, function(err, stdout, stderr) {
-	    if (err) {
-		exec("./kill-docker " + fileName);
-		reject("\u001b[0m\u001b[0;1;31mInternal error or timeout\u001b[0m\u001b[1m<br>" + stdout);
-	    } else if (stderr){
-		reject(stderr);
-	    } else {
-		resolve({res:fs.readFileSync(fileName + '.out'), stdout: stdout});
-	    }
-	});
+        exec("./run-docker " + fileName, options, function (err, stdout, stderr) {
+            if (err) {
+                exec("./kill-docker " + fileName);
+                reject("\u001b[0m\u001b[0;1;31mError or timeout\u001b[0m\u001b[1m<br>" + stdout);
+            } else {
+                resolve({ res: fs.readFileSync(fileName + '.out'), stdout: stderr});
+            }
+        });
     });
 }
 
@@ -50,8 +48,8 @@ function treat(code) {
     return Promise.resolve(write(fileName, code)).then(() => execute(fileName));
 }
 
-app.post('/',  upload.array(), function(req, res) {
-    Promise.resolve(treat(req.body.code)).then((done) => res.json({result: JSON.parse(done.res), message: done.stdout})).catch((err) => res.json({message: err}));
+app.post('/', upload.array(), function (req, res) {
+    Promise.resolve(treat(req.body.code)).then((done) => res.json({ result: JSON.parse(done.res), message: done.stdout })).catch((err) => res.json({ message: err }));
 })
 
 app.listen(3000, function() {
