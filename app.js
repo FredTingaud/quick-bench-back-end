@@ -45,6 +45,7 @@ function execute(fileName) {
 
 function treat(code) {
     var fileName = '/tmp/' + sha1(code);
+    code = '#include <benchmark/benchmark_api.h>\n' + code + '\nBENCHMARK_MAIN();';
     return Promise.resolve(write(fileName, code)).then(() => execute(fileName));
 }
 
