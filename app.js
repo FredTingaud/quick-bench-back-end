@@ -26,13 +26,13 @@ function write(fileName, code) {
     });        
 }
 
-function execute(fileName) {
+function execute(fileName, compiler, optim, version) {
     let options = {
         timeout: 30000,
         killSignal: 'SIGKILL'
     }
     return new Promise((resolve, reject) => {
-        exec("./run-docker " + fileName, options, function (err, stdout, stderr) {
+        exec('./run-docker ' + fileName + ' ' + compiler + ' ' + optim + ' ' + version, options, function (err, stdout, stderr) {
             if (err) {
                 exec("./kill-docker " + fileName);
                 reject("\u001b[0m\u001b[0;1;31mError or timeout\u001b[0m\u001b[1m<br>" + stdout);
@@ -43,14 +43,15 @@ function execute(fileName) {
     });
 }
 
-function treat(code) {
-    var fileName = '/tmp/' + sha1(code);
-    code = '#include <benchmark/benchmark_api.h>\n' + code + '\nBENCHMARK_MAIN();';
-    return Promise.resolve(write(fileName, code)).then(() => execute(fileName));
+function treat(code, compiler, optim, version) {
+    var fileName = '/tmp/' + sha1(code + compiler + optim + version);
+    code = '#include <benchmark/benchmark_api.h>\n' + code + '\nBENCHMARK_MAIN()';
+    return Promise.resolve(write(fileName, code)).then(() => execute(fileName, compiler, optim, version));
 }
 
 app.post('/', upload.array(), function (req, res) {
-    Promise.resolve(treat(req.body.code)).then((done) => res.json({ result: JSON.parse(done.res), message: done.stdout })).catch((err) => res.json({ message: err }));
+    Promise.resolve(treat(req.body.code, req.body.compiler, req.body.optim, req.body.version))
+	.then((done) => res.json({ result: JSON.parse(done.res), message: done.stdout })).catch((err) => res.json({ message: err }));
 })
 
 app.listen(3000, function() {

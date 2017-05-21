@@ -1,11 +1,30 @@
 #!/bin/bash
 
 FILE=`realpath $1`
+
+if [ $3 == 1 ]; then
+    OPTIM="-O1"
+elif [ $3 == 2 ]; then
+    OPTIM="-O2"
+elif [ $3 == 3 ]; then
+    OPTIM="-O3"
+fi
+
+if [ $4 == 11 ]; then
+    VERSION="-std=c++11"
+elif [ $4 == 14 ]; then
+    VERSION="-std=c++14"
+elif [ $4 == 17 ]; then
+    VERSION="-std=c++1z"
+else
+    VERSION="-std=c++98 -Werror=c++11-extensions"
+fi
+
 OUTFILE=$FILE.out
 if [ -f $OUTFILE ]; then
     echo "Results already in cache, resending..."
 else
     touch $OUTFILE
     chmod 666 $OUTFILE
-    exec docker run --rm -v $FILE:/home/builder/bench-file.cpp --memory="100m" --cpu-period=100000 --cpu-quota=25000 --cidfile=$FILE.pid -v $OUTFILE:/home/builder/bench.out -t bench-runner /bin/bash -c "clang++-3.8 -std=c++1z bench-file.cpp -o bench /usr/local/lib/libbenchmark.a -lpthread && ./bench --benchmark_format=json --benchmark_out=/home/builder/bench.out"
+    exec docker run --rm -v $FILE:/home/builder/bench-file.cpp --memory="100m" --cpu-period=100000 --cpu-quota=25000 --cidfile=$FILE.pid -v $OUTFILE:/home/builder/bench.out -t bench-runner /bin/bash -c "clang++-3.8 $OPTIM $VERSION bench-file.cpp -o bench /usr/local/lib/libbenchmark.a -lpthread && ./bench --benchmark_format=json --benchmark_out=/home/builder/bench.out"
 fi
