@@ -1,0 +1,11 @@
+sudo yum update -y
+sudo yum install -y docker
+sudo curl --silent --location https://rpm.nodesource.com/setup_7.x | sudo bash -
+sudo yum install -y nodejs
+cd /srv/quick-bench-back-end/
+sudo service docker start
+sudo useradd -M -s /sbin/nologin -r -G docker quick-bench
+sudo ./build-docker
+sudo cp quick-benchd /etc/init.d/.
+sudo npm install
+sudo service quick-benchd start
