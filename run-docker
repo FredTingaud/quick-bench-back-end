@@ -22,7 +22,7 @@ fi
 
 OUTFILE=$FILE.out
 if [ -f $OUTFILE ]; then
-    echo "Results already in cache, resending..."
+    >&2 echo "Results already in cache, resending..."
 else
     touch $OUTFILE
     chmod 666 $OUTFILE
