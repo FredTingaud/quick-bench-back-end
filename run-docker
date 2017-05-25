@@ -20,6 +20,7 @@ else
     VERSION="-std=c++98 -Werror=c++11-extensions"
 fi
 
+INFILE=$FILE.cpp
 OUTFILE=$FILE.out
 CIDFILE=$FILE.cid
 if [ $5 ] && [ -f $OUTFILE ]; then
@@ -31,5 +32,5 @@ if [ -f $OUTFILE ]; then
 else
     touch $OUTFILE
     chmod 666 $OUTFILE
-    exec docker run --rm -v $FILE:/home/builder/bench-file.cpp --memory="100m" --cpu-period=100000 --cpu-quota=25000 --cidfile=$CIDFILE -v $OUTFILE:/home/builder/bench.out -t bench-runner /bin/bash -c "clang++-3.8 $OPTIM $VERSION bench-file.cpp -o bench /usr/local/lib/libbenchmark.a -lpthread && ./bench --benchmark_format=json --benchmark_out=/home/builder/bench.out"
+    exec docker run --rm -v $INFILE:/home/builder/bench-file.cpp --memory="100m" --cpu-period=100000 --cpu-quota=25000 --cidfile=$CIDFILE -v $OUTFILE:/home/builder/bench.out -t bench-runner /bin/bash -c "clang++-3.8 $OPTIM $VERSION bench-file.cpp -o bench /usr/local/lib/libbenchmark.a -lpthread && ./bench --benchmark_format=json --benchmark_out=/home/builder/bench.out"
 fi

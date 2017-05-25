@@ -12,6 +12,7 @@ var multer = require('multer');
 var upload = multer();
 
 const MAX_CODE_LENGTH = 20000;
+const WRITE_PATH = '/tmp';
 
 app.use(bodyParser.json());
 app.use(cors());
@@ -28,34 +29,54 @@ function write(fileName, code) {
     });        
 }
 
-function execute(fileName, compiler, optim, version, force) {
+function runDockerCommand(fileName, request) {
+    return './run-docker ' + fileName + ' ' + request.compiler + ' ' + request.optim + ' ' + request.version + (request.force ? ' -f' : '');
+}
+
+function optionsToString(request) {
+    let options = {
+        "compiler": request.compiler,
+        "optim": request.optim,
+        "cppVersion": request.version
+    };
+    return JSON.stringify(options);
+}
+
+function saveOptions(fileName, request) {
+    write(fileName + '.opt', optionsToString(request));
+}
+
+function execute(fileName, request) {
     let options = {
         timeout: 30000,
         killSignal: 'SIGKILL'
     }
     return new Promise((resolve, reject) => {
-        exec('./run-docker ' + fileName + ' ' + compiler + ' ' + optim + ' ' + version + (force ? ' -f' : ''), options, function (err, stdout, stderr) {
+        exec(runDockerCommand(fileName, request), options, function (err, stdout, stderr) {
             if (err) {
                 exec("./kill-docker " + fileName);
                 reject("\u001b[0m\u001b[0;1;31mError or timeout\u001b[0m\u001b[1m<br>" + stdout);
             } else {
+                saveOptions(fileName, request);
                 resolve({ res: fs.readFileSync(fileName + '.out'), stdout: stderr});
             }
         });
     });
 }
 
-function treat(code, compiler, optim, version, force) {
-    if (code.length > MAX_CODE_LENGTH) {
+function treat(request) {
+    if (request.code.length > MAX_CODE_LENGTH) {
         return Promise.reject('\u001b[0m\u001b[0;1;31mError: Unauthorized code length.\u001b[0m\u001b[1m');
     }
-    var fileName = '/tmp/' + sha1(code + compiler + optim + version);
-    code = '#include <benchmark/benchmark_api.h>\n' + code + '\nBENCHMARK_MAIN()';
-    return Promise.resolve(write(fileName, code)).then(() => execute(fileName, compiler, optim, version, force));
+    let name = sha1(request.code + request.compiler + request.optim + request.version);
+    var dir = WRITE_PATH;
+    var fileName =  dir + '/' + name;
+    let code = '#include <benchmark/benchmark_api.h>\n' + request.code + '\nBENCHMARK_MAIN()';
+    return Promise.resolve(write(fileName +'.cpp' , code)).then(() => execute(fileName, request));
 }
 
 app.post('/', upload.array(), function (req, res) {
-    Promise.resolve(treat(req.body.code, req.body.compiler, req.body.optim, req.body.version, req.body.force))
+    Promise.resolve(treat(req.body))
         .then((done) => res.json({ result: JSON.parse(done.res), message: done.stdout }))
         .catch((err) => res.json({ message: err }));
 })
