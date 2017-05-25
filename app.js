@@ -11,6 +11,8 @@ var multer = require('multer');
 
 var upload = multer();
 
+const MAX_CODE_LENGTH = 20000;
+
 app.use(bodyParser.json());
 app.use(cors());
 
@@ -44,6 +46,9 @@ function execute(fileName, compiler, optim, version) {
 }
 
 function treat(code, compiler, optim, version) {
+    if (code.length > MAX_CODE_LENGTH) {
+        return Promise.reject('\u001b[0m\u001b[0;1;31mError: Unauthorized code length.\u001b[0m\u001b[1m');
+    }
     var fileName = '/tmp/' + sha1(code + compiler + optim + version);
     code = '#include <benchmark/benchmark_api.h>\n' + code + '\nBENCHMARK_MAIN()';
     return Promise.resolve(write(fileName, code)).then(() => execute(fileName, compiler, optim, version));
