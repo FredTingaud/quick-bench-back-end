@@ -30,14 +30,14 @@ function write(fileName, code) {
 }
 
 function runDockerCommand(fileName, request) {
-    return './run-docker ' + fileName + ' ' + request.compiler + ' ' + request.optim + ' ' + request.version + (request.force ? ' -f' : '');
+    return './run-docker ' + fileName + ' ' + request.compiler + ' ' + request.optim + ' ' + request.cppVersion + (request.force ? ' -f' : '');
 }
 
 function optionsToString(request) {
     let options = {
         "compiler": request.compiler,
         "optim": request.optim,
-        "cppVersion": request.version
+        "cppVersion": request.cppVersion
     };
     return JSON.stringify(options);
 }
@@ -68,7 +68,7 @@ function treat(request) {
     if (request.code.length > MAX_CODE_LENGTH) {
         return Promise.reject('\u001b[0m\u001b[0;1;31mError: Unauthorized code length.\u001b[0m\u001b[1m');
     }
-    let name = sha1(request.code + request.compiler + request.optim + request.version);
+    let name = sha1(request.code + request.compiler + request.optim + request.cppVersion);
     var dir = WRITE_PATH;
     var fileName =  dir + '/' + name;
     let code = '#include <benchmark/benchmark_api.h>\n' + request.code + '\nBENCHMARK_MAIN()';
