@@ -58,26 +58,30 @@ function execute(fileName, request) {
                 reject("\u001b[0m\u001b[0;1;31mError or timeout\u001b[0m\u001b[1m<br>" + stdout);
             } else {
                 saveOptions(fileName, request);
-                resolve({ res: fs.readFileSync(fileName + '.out'), stdout: stderr});
+                resolve({ res: fs.readFileSync(fileName + '.out'), stdout: stderr, id: makeName(request) });
             }
         });
     });
+}
+
+function makeName(request) {
+    return sha1(request.code + request.compiler + request.optim + request.cppVersion);
 }
 
 function treat(request) {
     if (request.code.length > MAX_CODE_LENGTH) {
         return Promise.reject('\u001b[0m\u001b[0;1;31mError: Unauthorized code length.\u001b[0m\u001b[1m');
     }
-    let name = sha1(request.code + request.compiler + request.optim + request.cppVersion);
-    var dir = WRITE_PATH;
-    var fileName = dir + '/' + name.substr(0, 2) + '/' + name;
+    let name = makeName(request);
+    var dir = WRITE_PATH + '/' + name.substr(0, 2);
+    var fileName = dir + '/' + name;
     let code = '#include <benchmark/benchmark_api.h>\n' + request.code + '\nBENCHMARK_MAIN()';
     return Promise.resolve(write(fileName +'.cpp' , code)).then(() => execute(fileName, request));
 }
 
 app.post('/', upload.array(), function (req, res) {
     Promise.resolve(treat(req.body))
-        .then((done) => res.json({ result: JSON.parse(done.res), message: done.stdout }))
+        .then((done) => res.json({ result: JSON.parse(done.res), message: done.stdout, id: done.id }))
         .catch((err) => res.json({ message: err }));
 })
 
