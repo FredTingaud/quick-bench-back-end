@@ -35,6 +35,7 @@ function runDockerCommand(fileName, request) {
 
 function optionsToString(request) {
     let options = {
+        "protocolVersion": request.protocolVersion,
         "compiler": request.compiler,
         "optim": request.optim,
         "cppVersion": request.cppVersion
@@ -65,7 +66,7 @@ function execute(fileName, request) {
 }
 
 function makeName(request) {
-    return sha1(request.code + request.compiler + request.optim + request.cppVersion);
+    return sha1(request.code + request.compiler + request.optim + request.cppVersion + request.protocolVersion);
 }
 
 function treat(request) {
