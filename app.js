@@ -70,7 +70,7 @@ function treat(request) {
     }
     let name = sha1(request.code + request.compiler + request.optim + request.cppVersion);
     var dir = WRITE_PATH;
-    var fileName =  dir + '/' + name;
+    var fileName = dir + '/' + name.substr(0, 2) + '/' + name;
     let code = '#include <benchmark/benchmark_api.h>\n' + request.code + '\nBENCHMARK_MAIN()';
     return Promise.resolve(write(fileName +'.cpp' , code)).then(() => execute(fileName, request));
 }
