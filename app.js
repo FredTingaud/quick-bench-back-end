@@ -43,10 +43,6 @@ function optionsToString(request) {
     return JSON.stringify(options);
 }
 
-function saveOptions(fileName, request) {
-    write(fileName + '.opt', optionsToString(request));
-}
-
 function execute(fileName, request) {
     let options = {
         timeout: 30000,
@@ -58,7 +54,6 @@ function execute(fileName, request) {
                 exec("./kill-docker " + fileName);
                 reject("\u001b[0m\u001b[0;1;31mError or timeout\u001b[0m\u001b[1m<br>" + stdout);
             } else {
-                saveOptions(fileName, request);
                 resolve({ res: fs.readFileSync(fileName + '.out'), stdout: stderr, id: makeName(request) });
             }
         });
@@ -87,7 +82,9 @@ function treat(request) {
     let name = makeName(request);
     var dir = WRITE_PATH + '/' + name.substr(0, 2);
     var fileName = dir + '/' + name;
-    return Promise.resolve(write(fileName + '.cpp', makeCode(request.code))).then(() => execute(fileName, request));
+    return Promise.resolve(write(fileName + '.cpp', makeCode(request.code)))
+        .then(() => write(fileName + '.opt', optionsToString(request)))
+        .then(() => execute(fileName, request));
 }
 
 function makeResult(done) {
