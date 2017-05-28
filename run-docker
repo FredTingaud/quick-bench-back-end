@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 FILE=`realpath $1`
 
 if [ $3 == 1 ]; then
@@ -20,17 +22,21 @@ else
     VERSION="-std=c++98 -Werror=c++11-extensions"
 fi
 
+LOCK=$FILE.lock
+lockfile $LOCK
 INFILE=$FILE.cpp
 OUTFILE=$FILE.out
 CIDFILE=$FILE.cid
 if [ $5 ] && [ -f $OUTFILE ]; then
     rm $OUTFILE
-    rm $CIDFILE
 fi
 if [ -f $OUTFILE ]; then
     >&2 echo "Results already in cache, resending..."
 else
     touch $OUTFILE
     chmod 666 $OUTFILE
-    exec docker run --rm -v $INFILE:/home/builder/bench-file.cpp --memory="100m" --cpu-period=100000 --cpu-quota=25000 --cidfile=$CIDFILE -v $OUTFILE:/home/builder/bench.out -t bench-runner /bin/bash -c "clang++-3.8 $OPTIM $VERSION bench-file.cpp -o bench /usr/local/lib/libbenchmark.a -lpthread && ./bench --benchmark_format=json --benchmark_out=/home/builder/bench.out"
+    docker run --rm -v $INFILE:/home/builder/bench-file.cpp --memory="100m" --cpu-period=100000 --cpu-quota=25000 --cidfile=$CIDFILE -v $OUTFILE:/home/builder/bench.out -t bench-runner /bin/bash -c "clang++-3.8 $OPTIM $VERSION bench-file.cpp -o bench /usr/local/lib/libbenchmark.a -lpthread && ./bench --benchmark_format=json --benchmark_out=/home/builder/bench.out"
+    rm $CIDFILE
 fi
+
+rm -f $LOCK

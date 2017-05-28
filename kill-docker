@@ -1,9 +1,10 @@
 #!/bin/bash
 
-FILE=$1.pid
+FILE=$1.cid
 
 if [ -f $FILE ]; then
     docker kill `cat $FILE`
-    rm $FILE
     rm $1.out
+    rm $FILE
 fi
+rm -f $1.lock
