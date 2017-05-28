@@ -69,6 +69,17 @@ function makeName(request) {
     return sha1(request.code + request.compiler + request.optim + request.cppVersion + request.protocolVersion);
 }
 
+function makeCode(inputCode) {
+    return `#include <benchmark/benchmark_api.h>
+${inputCode}
+
+static void Noop(benchmark::State& state) {
+  while (state.KeepRunning());
+}
+BENCHMARK(Noop);
+BENCHMARK_MAIN()`;
+}
+
 function treat(request) {
     if (request.code.length > MAX_CODE_LENGTH) {
         return Promise.reject('\u001b[0m\u001b[0;1;31mError: Unauthorized code length.\u001b[0m\u001b[1m');
@@ -76,13 +87,25 @@ function treat(request) {
     let name = makeName(request);
     var dir = WRITE_PATH + '/' + name.substr(0, 2);
     var fileName = dir + '/' + name;
-    let code = '#include <benchmark/benchmark_api.h>\n' + request.code + '\nBENCHMARK_MAIN()';
-    return Promise.resolve(write(fileName +'.cpp' , code)).then(() => execute(fileName, request));
+    return Promise.resolve(write(fileName + '.cpp', makeCode(request.code))).then(() => execute(fileName, request));
+}
+
+function makeResult(done) {
+    let values = JSON.parse(done.res);
+    let result = { context: values.context };
+    let noopTime = values.benchmarks[values.benchmarks.length - 1].cpu_time;
+    result.benchmarks = values.benchmarks.map(obj => {
+        return {
+            name: obj.name,
+            cpu_time: obj.cpu_time / noopTime
+        }
+    });
+    return { result: result, message: done.stdout, id: done.id }
 }
 
 app.post('/', upload.array(), function (req, res) {
     Promise.resolve(treat(req.body))
-        .then((done) => res.json({ result: JSON.parse(done.res), message: done.stdout, id: done.id }))
+        .then((done) => res.json(makeResult(done)))
         .catch((err) => res.json({ message: err }));
 })
 
