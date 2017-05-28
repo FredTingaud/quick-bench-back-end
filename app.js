@@ -12,7 +12,7 @@ var multer = require('multer');
 var upload = multer();
 
 const MAX_CODE_LENGTH = 20000;
-const WRITE_PATH = '/tmp';
+const WRITE_PATH = '/data';
 
 app.use(bodyParser.json());
 app.use(cors());

@@ -1,10 +1,5 @@
 #!/bin/bash
 
-if [ $# -lt 1 ]; then
-  echo 1>&2 "Missing output folder"
-  exit 2
-fi
-
 sudo yum update -y
 sudo yum install -y docker
 sudo curl --silent --location https://rpm.nodesource.com/setup_7.x | sudo bash -
@@ -12,7 +7,7 @@ sudo yum install -y nodejs
 cd /srv/quick-bench-back-end/
 sudo service docker start
 sudo useradd -M -s /sbin/nologin -r -G docker quick-bench
-mkdir -m 777 -p $(printf "$1/%02x " $(seq 0 255))
+mkdir -m 777 -p $(printf "/data/%02x " $(seq 0 255))
 sudo ./build-docker
 sudo cp quick-benchd /etc/init.d/.
 sudo npm install
