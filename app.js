@@ -60,7 +60,7 @@ function execute(fileName, request) {
     });
 }
 
-function makeName(request) {
+function makeName (request) {
     return sha1(request.code + request.compiler + request.optim + request.cppVersion + request.protocolVersion);
 }
 
@@ -109,3 +109,5 @@ app.post('/', upload.array(), function (req, res) {
 app.listen(3000, function() {
     console.log('Listening to commands');
 });
+
+exports.makeName = makeName;
