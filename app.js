@@ -52,7 +52,7 @@ function execute(fileName, request) {
         exec(runDockerCommand(fileName, request), options, function (err, stdout, stderr) {
             if (err) {
                 exec("./kill-docker " + fileName);
-                reject("\u001b[0m\u001b[0;1;31mError or timeout\u001b[0m\u001b[1m<br>" + stdout);
+                reject("\u001b[0m\u001b[0;1;31mError or timeout\u001b[0m\u001b[1m<br>" + stdout + "<br>" + stderr);
             } else {
                 resolve({ res: fs.readFileSync(fileName + '.out'), stdout: stderr, id: makeName(request) });
             }
