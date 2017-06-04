@@ -83,7 +83,7 @@ function execute(fileName, request) {
 
 function groupResults(results) {
     return new Promise((resolve, reject) => {
-        let code = unmakeCode(results[0]);
+        let code = unwrapCode(results[0]);
         let options = results[1];
         let graph = results[2];
         resolve({ code: code, options: JSON.parse(options), graph: JSON.parse(graph) });
@@ -94,11 +94,11 @@ function makeName(request) {
     return sha1(request.code + request.compiler + request.optim + request.cppVersion + request.protocolVersion);
 }
 
-function makeCode(inputCode) {
+function wrapCode(inputCode) {
     return PREFIX_CODE_1 + inputCode + SUFFIX_CODE_1;
 }
 
-function unmakeCode(inputCode) {
+function unwrapCode(inputCode) {
     if (inputCode.startsWith(PREFIX_CODE_1)) {
         inputCode = inputCode.slice(PREFIX_CODE_1.length);
     }
@@ -126,7 +126,7 @@ function benchmark(request) {
     let name = makeName(request);
     var dir = WRITE_PATH + '/' + name.substr(0, 2);
     var fileName = dir + '/' + name;
-    return Promise.resolve(write(fileName + '.cpp', makeCode(request.code)))
+    return Promise.resolve(write(fileName + '.cpp', wrapCode(request.code)))
         .then(() => write(fileName + '.opt', optionsToString(request)))
         .then(() => execute(fileName, request));
 }
@@ -182,3 +182,6 @@ app.listen(3000, function() {
 exports.makeName = makeName;
 exports.encodeName = encodeName;
 exports.decodeName = decodeName;
+exports.wrapCode = wrapCode;
+exports.unwrapCode = unwrapCode;
+exports.groupResults = groupResults;
