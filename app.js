@@ -110,12 +110,12 @@ function unwrapCode(inputCode) {
 
 function encodeName(id) {
     let short = new Buffer(id, 'hex').toString('base64');
-    short = short.replace('/', '-').replace('+', '_');
+    short = short.replace(new RegExp('/', 'g'), '-').replace(new RegExp('\\+', 'g'), '_');
     return short.slice(0, -1);
 }
 
 function decodeName(short) {
-    short = short.replace('-', '/').replace('_', '+') + '=';
+    short = short.replace(new RegExp('\\-', 'g'), '/').replace(new RegExp('_', 'g'), '+ ') + '=';
     return new Buffer(short, 'base64').toString('hex');
 }
 
