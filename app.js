@@ -66,7 +66,7 @@ function optionsToString(request) {
 
 function execute(fileName, request) {
     let options = {
-        timeout: 30000,
+        timeout: 60000,
         killSignal: 'SIGKILL'
     }
     return new Promise((resolve, reject) => {
