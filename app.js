@@ -51,7 +51,7 @@ function read(fileName) {
 }
 
 function runDockerCommand(fileName, request) {
-    return './run-docker ' + fileName + ' ' + request.compiler + ' ' + request.optim + ' ' + request.cppVersion + (request.force ? ' -f' : '');
+    return './run-docker ' + fileName + ' ' + request.compiler + ' ' + request.optim + ' ' + request.cppVersion + ' ' + request.isAnnotated + ' ' + request.force;
 }
 
 function optionsToString(request) {
@@ -59,7 +59,8 @@ function optionsToString(request) {
         "protocolVersion": request.protocolVersion,
         "compiler": request.compiler,
         "optim": request.optim,
-        "cppVersion": request.cppVersion
+        "cppVersion": request.cppVersion,
+        "isAnnotated": request.isAnnotated
     };
     return JSON.stringify(options);
 }
@@ -91,7 +92,9 @@ function groupResults(results) {
 }
 
 function makeName(request) {
-    return sha1(request.code + request.compiler + request.optim + request.cppVersion + request.protocolVersion);
+    if (request.protocolVersion === 1)
+        return sha1(request.code + request.compiler + request.optim + request.cppVersion + request.protocolVersion);
+    return sha1(request.code + request.compiler + request.optim + request.cppVersion + request.isAnnotated + request.protocolVersion);
 }
 
 function wrapCode(inputCode) {
@@ -157,6 +160,7 @@ function makeWholeResult(done) {
         compiler: done.options.compiler,
         optim: done.options.optim,
         cppVersion: done.options.cppVersion,
+        isAnnotated: done.options.isAnnotated,
         protocolVersion: done.options.protocolVersion
     };
 
