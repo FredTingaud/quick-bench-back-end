@@ -11,4 +11,6 @@ mkdir -m 777 -p $(printf "/data/%02x " $(seq 0 255))
 sudo ./build-docker
 sudo cp quick-benchd /etc/init.d/.
 sudo npm install
+sudo ./seccomp.js
+sudo sysctl -w kernel.perf_event_paranoid=1
 sudo service quick-benchd start
