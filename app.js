@@ -76,7 +76,12 @@ function execute(fileName, request) {
                 exec("./kill-docker " + fileName);
                 reject("\u001b[0m\u001b[0;1;31mError or timeout\u001b[0m\u001b[1m<br>" + stdout + "<br>" + stderr);
             } else {
-                resolve({ res: fs.readFileSync(fileName + '.out'), stdout: stderr, id: encodeName(makeName(request)) });
+                resolve({
+                    res: fs.readFileSync(fileName + '.out'),
+                    stdout: stderr,
+                    id: encodeName(makeName(request)),
+                    annotation: request.isAnnotated ? fs.readFileSync(fileName + '.perf') : null
+                });
             }
         });
     });
@@ -87,7 +92,8 @@ function groupResults(results) {
         let code = unwrapCode(results[0]);
         let options = results[1];
         let graph = results[2];
-        resolve({ code: code, options: JSON.parse(options), graph: JSON.parse(graph) });
+        let annotation = results[3];
+        resolve({ code: code, options: JSON.parse(options), graph: JSON.parse(graph), annotation: annotation });
     });
 }
 
@@ -138,7 +144,7 @@ function reload(encodedName) {
     let name = decodeName(encodedName);
     var dir = WRITE_PATH + '/' + name.substr(0, 2);
     var fileName = dir + '/' + name;
-    return Promise.all([read(fileName + '.cpp'), read(fileName + '.opt'), read(fileName + '.out')])
+    return Promise.all([read(fileName + '.cpp'), read(fileName + '.opt'), read(fileName + '.out'), read(fileName + '.perf')])
         .then((values) => groupResults(values));
 }
 

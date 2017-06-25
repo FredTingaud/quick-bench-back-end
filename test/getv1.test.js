@@ -108,7 +108,8 @@ BENCHMARK(BM_StringCopy);
         cppVersion: "17",
         optim: "1",
         protocolVersion: 1
-    }
+    },
+    annotation: null
 };
 
 describe('group', function () {
