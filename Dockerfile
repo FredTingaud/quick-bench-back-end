@@ -9,6 +9,9 @@ RUN apt-get update && apt-get -y install \
    cmake \
    clang-3.8 \
    libfreetype6-dev \
+   perf-tools-unstable \
+   && rm -f /usr/bin/perf \
+   && find /usr/lib/linux-tools/ -name perf -exec ln -s {} /usr/bin/perf \; \
    && rm -rf /var/lib/apt/lists/*
 
 ENV CC clang-3.8
