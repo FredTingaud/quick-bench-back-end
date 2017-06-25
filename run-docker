@@ -38,7 +38,10 @@ else
     chmod 666 $OUTFILE
     touch $PERFFILE
     chmod 666 $PERFFILE
-    docker run --security-opt seccomp=seccomp.json --rm -v $INFILE:/home/builder/bench-file.cpp -v $PERFFILE:/home/builder/bench.perf --memory="100m" --cpu-period=100000 --cpu-quota=25000 --cidfile=$CIDFILE -v $OUTFILE:/home/builder/bench.out -t bench-runner /bin/bash -c "clang++-3.8 $OPTIM $VERSION bench-file.cpp -o bench /usr/local/lib/libbenchmark.a -lpthread && perf record -g ./bench --benchmark_format=json --benchmark_out=/home/builder/bench.out && perf report -g 'fractal,0,caller' > bench.perf"
+    ANNOTATE="--security-opt seccomp=seccomp.json -v $PERFFILE:/home/builder/bench.perf"
+    MEMORY_LIMITS='--memory=100m --cpu-period=100000 --cpu-quota=25000'
+    ANNOTATE_CMD="grep \"\\\"name\\\":\" bench.out | while read line ; do echo $line; NAME=\${line:9:-2}; echo \"echo \\\"----------- \$NAME\\\" >> bench.perf\" >> command; echo \"perf annotate --stdio \$NAME >> bench.perf\" >> command; done; chmod 744 command; ./command"
+    docker run --rm $ANNOTATE -v $INFILE:/home/builder/bench-file.cpp $MEMORY_LIMITS --cidfile=$CIDFILE -v $OUTFILE:/home/builder/bench.out -t bench-runner /bin/bash -c "clang++-3.8 $OPTIM $VERSION bench-file.cpp -o bench /usr/local/lib/libbenchmark.a -lpthread && perf record -g ./bench --benchmark_format=json --benchmark_out=/home/builder/bench.out && $ANNOTATE_CMD"
     rm $CIDFILE
 fi
 
