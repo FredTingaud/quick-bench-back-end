@@ -152,7 +152,7 @@ function reload(encodedName) {
         .then((values) => groupResults(values));
 }
 
-function makeGraphResult(values, message, id) {
+function makeGraphResult(values, message, id, annotation) {
     let result = { context: values.context };
     let noopTime = values.benchmarks[values.benchmarks.length - 1].cpu_time;
     result.benchmarks = values.benchmarks.map(obj => {
@@ -161,7 +161,7 @@ function makeGraphResult(values, message, id) {
             cpu_time: obj.cpu_time / noopTime
         }
     });
-    return { result: result, message: message, id: id }
+    return { result: result, message: message, id: id, annotation: annotation }
 }
 
 function makeWholeResult(done) {
@@ -174,7 +174,7 @@ function makeWholeResult(done) {
         protocolVersion: done.options.protocolVersion
     };
 
-    return Object.assign(result, makeGraphResult(done.graph, '', encodeName(makeName(result))));
+    return Object.assign(result, makeGraphResult(done.graph, '', encodeName(makeName(result)), done.annotation));
 }
 
 app.post('/', upload.array(), function (req, res) {
