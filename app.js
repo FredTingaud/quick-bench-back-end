@@ -38,11 +38,15 @@ function write(fileName, code) {
     });        
 }
 
-function read(fileName) {
+function read(fileName, acceptMissing) {
     return new Promise((resolve, reject) => {
         fs.readFile(fileName, 'utf8', (err, data) => {
             if (err) {
-                reject(err);
+                if (acceptMissing && err.code === 'ENOENT') {
+                    resolve(null);
+                } else {
+                    reject(err);
+                }
             } else {
                 resolve(data);
             }
@@ -144,7 +148,7 @@ function reload(encodedName) {
     let name = decodeName(encodedName);
     var dir = WRITE_PATH + '/' + name.substr(0, 2);
     var fileName = dir + '/' + name;
-    return Promise.all([read(fileName + '.cpp'), read(fileName + '.opt'), read(fileName + '.out'), read(fileName + '.perf')])
+    return Promise.all([read(fileName + '.cpp'), read(fileName + '.opt'), read(fileName + '.out'), read(fileName + '.perf', true)])
         .then((values) => groupResults(values));
 }
 
