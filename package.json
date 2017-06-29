@@ -26,6 +26,7 @@
     "express": "^4.14.1",
     "fs": "0.0.1-security",
     "multer": "^1.3.0",
+    "request": "^2.81.0",
     "sha1": "^1.1.1"
   },
   "devDependencies": {
