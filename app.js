@@ -84,7 +84,7 @@ function execute(fileName, request) {
                     res: fs.readFileSync(fileName + '.out'),
                     stdout: stderr,
                     id: encodeName(makeName(request)),
-                    annotation: request.isAnnotated ? fs.readFileSync(fileName + '.perf') : null
+                    annotation: request.isAnnotated ? fs.readFileSync(fileName + '.perf', 'utf8') : null
                 });
             }
         });
