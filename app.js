@@ -179,7 +179,7 @@ function makeWholeResult(done) {
 
 app.post('/', upload.array(), function (req, res) {
     Promise.resolve(benchmark(req.body))
-        .then((done) => res.json(makeGraphResult(JSON.parse(done.res), done.stdout, done.id)))
+        .then((done) => res.json(makeGraphResult(JSON.parse(done.res), done.stdout, done.id, done.annotation)))
         .catch((err) => res.json({ message: err }));
 });
 
