@@ -132,6 +132,16 @@ function decodeName(short) {
     return new Buffer(short, 'base64').toString('hex');
 }
 
+function getFunctions(code) {
+    RE = /BENCHMARK\s*\(\s*([A-Za-z0-9_]+)\s*\)/g;
+    let content='';
+    let res;
+    while ((res = RE.exec(code)) !== null) {
+        content+= res[1] + '\n';
+    }
+    return content;
+}
+
 function benchmark(request) {
     if (request.code.length > MAX_CODE_LENGTH) {
         return Promise.reject('\u001b[0m\u001b[0;1;31mError: Unauthorized code length.\u001b[0m\u001b[1m');
@@ -140,6 +150,7 @@ function benchmark(request) {
     var dir = WRITE_PATH + '/' + name.substr(0, 2);
     var fileName = dir + '/' + name;
     return Promise.resolve(write(fileName + '.cpp', wrapCode(request.code)))
+        .then(() => write(fileName + '.func', getFunctions(request.code)))
         .then(() => write(fileName + '.opt', optionsToString(request)))
         .then(() => execute(fileName, request));
 }
@@ -199,3 +210,4 @@ exports.decodeName = decodeName;
 exports.wrapCode = wrapCode;
 exports.unwrapCode = unwrapCode;
 exports.groupResults = groupResults;
+exports.getFunctions = getFunctions;
