@@ -27,15 +27,15 @@ app.use(bodyParser.json());
 app.use(cors());
 
 function write(fileName, code) {
-   return new Promise((resolve, reject) => {
-       fs.writeFile(fileName, code, (err) => {
+    return new Promise((resolve, reject) => {
+        fs.writeFile(fileName, code, (err) => {
             if (err) {
-                reject(err);    
+                reject(err);
             } else {
                 resolve();
             }
         });
-    });        
+    });
 }
 
 function read(fileName, acceptMissing) {
@@ -55,7 +55,7 @@ function read(fileName, acceptMissing) {
 }
 
 function runDockerCommand(fileName, request) {
-    return './run-docker ' + fileName + ' ' + request.compiler + ' ' + request.optim + ' ' + request.cppVersion + ' ' + request.isAnnotated + ' ' + request.force;
+    return './run-docker ' + fileName + ' ' + request.compiler + ' ' + request.optim + ' ' + request.cppVersion + ' ' + (request.isAnnotated || false) + ' ' + request.force;
 }
 
 function optionsToString(request) {
@@ -189,7 +189,7 @@ app.get('/get/:id', upload.array(), function (req, res) {
         .catch(() => res.json({ message: 'Could not load given id' }));
 });
 
-app.listen(3000, function() {
+app.listen(3000, function () {
     console.log('Listening to commands');
 });
 
