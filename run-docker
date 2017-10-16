@@ -34,7 +34,7 @@ if [ $6 = true ] && [ -f $OUTFILE ]; then
     rm -f $PERFFILE
 fi
 if [ -f $OUTFILE ] && ([ $5 = false ] || [ -f $PERFFILE ]); then
-    >&2 echo "Results already in cache, resending..."
+    >&2 echo "Showing cached results"
 else
     touch $OUTFILE
     chmod 666 $OUTFILE
