@@ -18,7 +18,7 @@ const PREFIX_CODE_1 = `#include <benchmark/benchmark.h>
 const SUFFIX_CODE_1 = `
 
 static void Noop(benchmark::State& state) {
-  while (state.KeepRunning());
+  for (auto _ : state) benchmark::DoNotOptimize(0);
 }
 BENCHMARK(Noop);
 BENCHMARK_MAIN()`;
