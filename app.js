@@ -13,7 +13,7 @@ var upload = multer();
 
 const MAX_CODE_LENGTH = 20000;
 const WRITE_PATH = '/data';
-const PREFIX_CODE_1 = `#include <benchmark/benchmark_api.h>
+const PREFIX_CODE_1 = `#include <benchmark/benchmark.h>
 `;
 const SUFFIX_CODE_1 = `
 
