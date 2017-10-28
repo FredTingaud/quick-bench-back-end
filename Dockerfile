@@ -7,7 +7,6 @@ USER root
 RUN apt-get update && apt-get -y install \
    git \
    cmake \
-   clang-3.8 \
    libfreetype6-dev \
    flex \
    bison \
@@ -15,7 +14,10 @@ RUN apt-get update && apt-get -y install \
    zlib1g-dev \
    libiberty-dev \
    libelf-dev \
-   gcc \
+   libmpc-dev \
+   g++ \
+   curl \
+   xz-utils \
    && rm -rf /var/lib/apt/lists/*
 
 ENV CC gcc
@@ -31,19 +33,30 @@ RUN cd /usr/src/ \
     && cd /usr/src \
     && rm -rf linux
 
-ENV CC clang-3.8
-ENV CXX clang++-3.8
+ENV GCC_VERSION 7.2.0
+
+RUN curl -fSL "http://ftpmirror.gnu.org/gcc/gcc-$GCC_VERSION/gcc-$GCC_VERSION.tar.xz" -o gcc.tar.xz \
+    && mkdir -p /usr/src/gcc \
+    && tar -xf gcc.tar.xz -C /usr/src/gcc --strip-components=1 \
+    && rm gcc.tar.xz* \
+    && cd /usr/src/gcc \
+    && mkdir build \
+    && cd build \
+    && /usr/src/gcc/configure --disable-multilib \
+    && make \
+    && make install-strip \
+    && cd ../.. \
+    && rm -rf gcc
 
 RUN cd /usr/src/ \
     && git clone https://github.com/google/benchmark.git \
     && mkdir -p /usr/src/benchmark/build/ \
     && cd /usr/src/benchmark/build/ \
     && cmake -DCMAKE_BUILD_TYPE=Release -DBENCHMARK_ENABLE_LTO=true .. \
-    && make -j12 \
+    && make -j2 \
     && make install
 
 RUN apt-get autoremove -y git \
-    gcc \
     cmake \
     flex \
     bison \
