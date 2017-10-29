@@ -142,11 +142,12 @@ function getFunctions(code) {
     return content;
 }
 
-function benchmark(request) {
+function benchmark(request, header) {
     if (request.code.length > MAX_CODE_LENGTH) {
         return Promise.reject('\u001b[0m\u001b[0;1;31mError: Unauthorized code length.\u001b[0m\u001b[1m');
     }
     let name = makeName(request);
+    console.log('Bench ' + name + ' ' + JSON.stringify(header));
     var dir = WRITE_PATH + '/' + name.substr(0, 2);
     var fileName = dir + '/' + name;
     return Promise.resolve(write(fileName + '.cpp', wrapCode(request.code)))
@@ -189,12 +190,13 @@ function makeWholeResult(done) {
 }
 
 app.post('/', upload.array(), function (req, res) {
-    Promise.resolve(benchmark(req.body))
+    Promise.resolve(benchmark(req.body, req.headers))
         .then((done) => res.json(makeGraphResult(JSON.parse(done.res), done.stdout, done.id, done.annotation)))
         .catch((err) => res.json({ message: err }));
 });
 
 app.get('/get/:id', upload.array(), function (req, res) {
+    console.log('Get ' + req.params.id + ' ' + JSON.stringify(req.headers));
     Promise.resolve(reload(req.params.id))
         .then((done) => res.json(makeWholeResult(done)))
         .catch(() => res.json({ message: 'Could not load given id' }));
