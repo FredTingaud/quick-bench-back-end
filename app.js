@@ -75,11 +75,16 @@ function execute(fileName, request) {
         killSignal: 'SIGKILL'
     }
     return new Promise((resolve, reject) => {
-        exec(runDockerCommand(fileName, request), options, function (err, stdout, stderr) {
+        console.time(fileName);
+        return exec(runDockerCommand(fileName, request), options, function (err, stdout, stderr) {
             if (err) {
+                console.timeEnd(fileName);
+                console.log('Bench failed ' + fileName);
                 exec("./kill-docker " + fileName);
                 reject("\u001b[0m\u001b[0;1;31mError or timeout\u001b[0m\u001b[1m<br>" + stdout + "<br>" + stderr);
             } else {
+                console.timeEnd(fileName);
+                console.log('Bench done ' + fileName + (stderr.indexOf('cached results') > -1 ? ' from cache' : ''));
                 resolve({
                     res: fs.readFileSync(fileName + '.out'),
                     stdout: stderr,
@@ -147,7 +152,7 @@ function benchmark(request, header) {
         return Promise.reject('\u001b[0m\u001b[0;1;31mError: Unauthorized code length.\u001b[0m\u001b[1m');
     }
     let name = makeName(request);
-    console.log('Bench ' + name + ' ' + JSON.stringify(header));
+    console.log('Bench ' + name + ' ' + JSON.stringify(header) + ' < ' + optionsToString(request));
     var dir = WRITE_PATH + '/' + name.substr(0, 2);
     var fileName = dir + '/' + name;
     return Promise.resolve(write(fileName + '.cpp', wrapCode(request.code)))
