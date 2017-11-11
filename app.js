@@ -13,9 +13,18 @@ var upload = multer();
 
 const MAX_CODE_LENGTH = 20000;
 const WRITE_PATH = '/data';
-const PREFIX_CODE_1 = `#include <benchmark/benchmark.h>
+const PREFIX_CODE_1 = `#include <benchmark/benchmark_api.h>
 `;
 const SUFFIX_CODE_1 = `
+
+static void Noop(benchmark::State& state) {
+  while (state.KeepRunning());
+}
+BENCHMARK(Noop);
+BENCHMARK_MAIN()`;
+const PREFIX_CODE_2 = `#include <benchmark/benchmark.h>
+`;
+const SUFFIX_CODE_2 = `
 
 static void Noop(benchmark::State& state) {
   for (auto _ : state) benchmark::DoNotOptimize(0);
@@ -113,7 +122,7 @@ function makeName(request) {
 }
 
 function wrapCode(inputCode) {
-    return PREFIX_CODE_1 + inputCode + SUFFIX_CODE_1;
+    return PREFIX_CODE_2 + inputCode + SUFFIX_CODE_2;
 }
 
 function unwrapCode(inputCode) {
@@ -122,6 +131,12 @@ function unwrapCode(inputCode) {
     }
     if (inputCode.endsWith(SUFFIX_CODE_1)) {
         inputCode = inputCode.slice(0, -SUFFIX_CODE_1.length);
+    }
+    if (inputCode.startsWith(PREFIX_CODE_2)) {
+        inputCode = inputCode.slice(PREFIX_CODE_2.length);
+    }
+    if (inputCode.endsWith(SUFFIX_CODE_2)) {
+        inputCode = inputCode.slice(0, -SUFFIX_CODE_2.length);
     }
     return inputCode;
 }
