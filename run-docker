@@ -45,10 +45,10 @@ else
         touch $PERFFILE
         chmod 666 $PERFFILE
         ANNOTATE="--security-opt seccomp=seccomp.json -v $PERFFILE:/home/builder/bench.perf -v $FUNCFILE:/home/builder/bench.func"
-        ANNOTATE_CMD=" && while read line ; do echo \"echo \\\"----------- \$line\\\" >> bench.perf\" >> command && echo \"perf annotate --stdio \$line >> bench.perf\" >> command ; done <bench.func && chmod 744 command && ./command"
+        ANNOTATE_CMD=" && ./annotate"
         ANNOTATE_RECORD="perf record -g"
     fi
-    docker run --rm $ANNOTATE -v $INFILE:/home/builder/bench-file.cpp $MEMORY_LIMITS --cidfile=$CIDFILE -v $OUTFILE:/home/builder/bench.out -t bench-runner /bin/bash -c "clang++-3.8 $OPTIM $VERSION bench-file.cpp -o bench /usr/local/lib/libbenchmark.a -lpthread && $ANNOTATE_RECORD ./bench --benchmark_format=json --benchmark_out=/home/builder/bench.out $ANNOTATE_CMD"
+    docker run --rm $ANNOTATE -v $INFILE:/home/builder/bench-file.cpp $MEMORY_LIMITS --cidfile=$CIDFILE -v $OUTFILE:/home/builder/bench.out -t bench-runner /bin/bash -c "./build $OPTIM $VERSION && $ANNOTATE_RECORD ./run $ANNOTATE_CMD"
     rm $CIDFILE
 fi
 
