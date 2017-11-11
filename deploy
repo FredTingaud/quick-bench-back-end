@@ -8,7 +8,7 @@ cd /srv/quick-bench-back-end/
 sudo service docker start
 sudo useradd -M -s /sbin/nologin -r -G docker quick-bench
 mkdir -m 777 -p $(printf "/data/%02x " $(seq 0 255))
-sudo ./build-docker
+sudo ./pull-docker
 sudo cp quick-benchd /etc/init.d/.
 sudo npm install
 sudo ./seccomp.js
