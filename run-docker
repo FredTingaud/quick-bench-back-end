@@ -44,7 +44,7 @@ else
     touch $OUTFILE
     chmod 666 $OUTFILE
 
-    MEMORY_LIMITS='--memory=100m --cpu-period=100000 --cpu-quota=25000'
+    MEMORY_LIMITS='--memory=250m --cpu-period=100000 --cpu-quota=25000'
 
     if [ $5 = true ]; then
         touch $PERFFILE
