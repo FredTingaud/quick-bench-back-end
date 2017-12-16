@@ -31,6 +31,13 @@ static void Noop(benchmark::State& state) {
 }
 BENCHMARK(Noop);
 BENCHMARK_MAIN()`;
+const SUFFIX_CODE_3 = `
+
+static void Noop(benchmark::State& state) {
+  for (auto _ : state) benchmark::DoNotOptimize(0);
+}
+BENCHMARK(Noop);
+BENCHMARK_MAIN();`;
 
 app.use(bodyParser.json());
 app.use(cors());
@@ -122,7 +129,7 @@ function makeName(request) {
 }
 
 function wrapCode(inputCode) {
-    return PREFIX_CODE_2 + inputCode + SUFFIX_CODE_2;
+    return PREFIX_CODE_2 + inputCode + SUFFIX_CODE_3;
 }
 
 function unwrapCode(inputCode) {
@@ -137,6 +144,9 @@ function unwrapCode(inputCode) {
     }
     if (inputCode.endsWith(SUFFIX_CODE_2)) {
         inputCode = inputCode.slice(0, -SUFFIX_CODE_2.length);
+    }
+    if (inputCode.endsWith(SUFFIX_CODE_3)) {
+        inputCode = inputCode.slice(0, -SUFFIX_CODE_3.length);
     }
     return inputCode;
 }
