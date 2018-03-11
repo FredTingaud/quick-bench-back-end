@@ -2,7 +2,7 @@
 
 var assert = require('assert');
 
-const OPTIONS = '{"protocolVersion":1,"compiler":"clang++-3.8","optim":"1","cppVersion":"17"}';
+const OPTIONS = '{"protocolVersion":3,"compiler":"clang++-3.8","optim":"1","cppVersion":"17","annotation":true,"lib":"llvm"}';
 const OUTPUT = `{
   "context": {
     "date": "2017-06-03 16:27:30",
@@ -35,6 +35,7 @@ const OUTPUT = `{
     }
   ]
 }`;
+const ANNOTATION = 'Some annotations.';
 const INPUT = `#include <benchmark/benchmark_api.h>
 static void BM_StringCreation(benchmark::State& state) {
   while (state.KeepRunning())
@@ -107,13 +108,15 @@ BENCHMARK(BM_StringCopy);
         compiler: "clang++-3.8",
         cppVersion: "17",
         optim: "1",
-        protocolVersion: 1
+        annotation: true,
+        lib: "llvm",
+        protocolVersion: 3
     },
-    annotation: null
+    annotation: "Some annotations."
 };
 
 describe('group', function () {
-    it('should return a stable message with protocol 1', function () {
-        return app.groupResults([INPUT, OPTIONS, OUTPUT]).then(res => assert.deepEqual(res, EXPECTED));
+    it('should return a stable message with protocol 3', function () {
+        return app.groupResults([INPUT, OPTIONS, OUTPUT, ANNOTATION]).then(res => assert.deepEqual(res, EXPECTED));
     });
 })

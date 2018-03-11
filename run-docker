@@ -53,7 +53,12 @@ else
         ANNOTATE_CMD=" && ./annotate"
         ANNOTATE_RECORD="perf record -g"
     fi
-    docker run --rm $ANNOTATE -v $INFILE:/home/builder/bench-file.cpp $MEMORY_LIMITS --cidfile=$CIDFILE -v $OUTFILE:/home/builder/bench.out -t fredtingaud/quick-bench:$2 /bin/bash -c "./build $OPTIM $VERSION && $ANNOTATE_RECORD ./run $ANNOTATE_CMD"
+    if [[ $7 == llvm ]] && [[ $2 == clang* ]]; then
+        BUILD_COMMAND=build-libcxx
+    else
+        BUILD_COMMAND=build
+    fi
+    docker run --rm $ANNOTATE -v $INFILE:/home/builder/bench-file.cpp $MEMORY_LIMITS --cidfile=$CIDFILE -v $OUTFILE:/home/builder/bench.out -t fredtingaud/quick-bench:$2 /bin/bash -c "./$BUILD_COMMAND $OPTIM $VERSION && $ANNOTATE_RECORD ./run $ANNOTATE_CMD"
     rm $CIDFILE
 fi
 

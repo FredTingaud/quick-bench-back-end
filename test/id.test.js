@@ -58,3 +58,27 @@ describe('id version 2', function () {
         assert.equal(app.makeName({ code: startCode, compiler: compiler, optim: optim, cppVersion: cppVersion, isAnnotated: false, protocolVersion: 2 }), '5ccde87699ed42859925307950ec7ce2c2197ddc');
     });
 })
+
+describe('id version 3', function () {
+    it('should return different id on protocolVersion change', function () {
+        assert.equal(app.makeName({ code: startCode, compiler: compiler, optim: optim, cppVersion: cppVersion, isAnnotated: true, lib: 'gnu', protocolVersion: 3 }), 'a53c5b14856c39c55439218c10320bef4a49257c');
+    });
+    it('should return different id on optim change', function () {
+        assert.equal(app.makeName({ code: startCode, compiler: compiler, optim: "0", cppVersion: cppVersion, isAnnotated: true, lib: 'gnu', protocolVersion: 3 }), '6b208fee183ba8884aa62a025f9e07308c6aa757');
+    });
+    it('should return different id on code change', function () {
+        assert.equal(app.makeName({ code: 'hello', compiler: compiler, optim: optim, cppVersion: cppVersion, isAnnotated: true, lib: 'gnu', protocolVersion: 3 }), 'b1a20c68ed6ccf1f68c5cae88ca96b559d260dc4');
+    });
+    it('should return different id on compiler change', function () {
+        assert.equal(app.makeName({ code: startCode, compiler: 'clang++-4.0', optim: optim, cppVersion: cppVersion, isAnnotated: true, lib: 'gnu', protocolVersion: 3 }), '0b17798be35cd859202da65dee74301ae048cf2f');
+    });
+    it('should return different id on cppVersion change', function () {
+        assert.equal(app.makeName({ code: startCode, compiler: compiler, optim: optim, cppVersion: '98', isAnnotated: true, lib: 'gnu', protocolVersion: 3 }), '77aff1de87af423078b44330ce0e002b53a8ae24');
+    });
+    it('should return different id on annotation change', function () {
+        assert.equal(app.makeName({ code: startCode, compiler: compiler, optim: optim, cppVersion: cppVersion, isAnnotated: false, lib: 'gnu', protocolVersion: 3 }), '390203c96b49407964a8973bb51f5ee87156b045');
+    });
+    it('should return different id on lib change', function () {
+        assert.equal(app.makeName({ code: startCode, compiler: compiler, optim: optim, cppVersion: cppVersion, isAnnotated: true, lib: 'llvm', protocolVersion: 3 }), '4bd647bcab41dd4b40022af2c88a86e0529611b0');
+    });
+})

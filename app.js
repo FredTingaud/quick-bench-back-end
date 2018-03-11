@@ -71,7 +71,7 @@ function read(fileName, acceptMissing) {
 }
 
 function runDockerCommand(fileName, request) {
-    return './run-docker ' + fileName + ' ' + request.compiler + ' ' + request.optim + ' ' + request.cppVersion + ' ' + (request.isAnnotated || false) + ' ' + request.force;
+    return './run-docker ' + fileName + ' ' + request.compiler + ' ' + request.optim + ' ' + request.cppVersion + ' ' + (request.isAnnotated || false) + ' ' + (request.force || false) + ' ' + (request.lib || 'gnu');
 }
 
 function optionsToString(request) {
@@ -80,7 +80,8 @@ function optionsToString(request) {
         "compiler": request.compiler,
         "optim": request.optim,
         "cppVersion": request.cppVersion,
-        "isAnnotated": request.isAnnotated
+        "isAnnotated": request.isAnnotated,
+        "lib": request.lib
     };
     return JSON.stringify(options);
 }
@@ -125,7 +126,9 @@ function groupResults(results) {
 function makeName(request) {
     if (request.protocolVersion === 1)
         return sha1(request.code + request.compiler + request.optim + request.cppVersion + request.protocolVersion);
-    return sha1(request.code + request.compiler + request.optim + request.cppVersion + request.isAnnotated + request.protocolVersion);
+    else if (request.protocolVersion === 2)
+        return sha1(request.code + request.compiler + request.optim + request.cppVersion + request.isAnnotated + request.protocolVersion);
+    return sha1(request.code + request.compiler + request.optim + request.cppVersion + request.isAnnotated + request.protocolVersion + request.lib);
 }
 
 function wrapCode(inputCode) {
@@ -213,6 +216,7 @@ function makeWholeResult(done) {
         optim: done.options.optim,
         cppVersion: done.options.cppVersion,
         isAnnotated: done.options.isAnnotated,
+        lib: done.options.lib,
         protocolVersion: done.options.protocolVersion
     };
 
@@ -243,3 +247,4 @@ exports.wrapCode = wrapCode;
 exports.unwrapCode = unwrapCode;
 exports.groupResults = groupResults;
 exports.getFunctions = getFunctions;
+exports.optionsToString = optionsToString;
