@@ -248,3 +248,4 @@ exports.unwrapCode = unwrapCode;
 exports.groupResults = groupResults;
 exports.getFunctions = getFunctions;
 exports.optionsToString = optionsToString;
+exports.execute = execute;
