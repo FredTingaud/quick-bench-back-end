@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-var express = require('express')
-var cors = require('cors')
+var express = require('express');
+var cors = require('cors');
 var fs = require('fs');
 var app = express();
 var exec = require('child_process').exec;
@@ -90,7 +90,7 @@ function execute(fileName, request) {
     let options = {
         timeout: 60000,
         killSignal: 'SIGKILL'
-    }
+    };
     return new Promise((resolve, reject) => {
         console.time(fileName);
         return exec(runDockerCommand(fileName, request), options, function (err, stdout, stderr) {
@@ -204,9 +204,9 @@ function makeGraphResult(values, message, id, annotation) {
         return {
             name: obj.name,
             cpu_time: obj.cpu_time / noopTime
-        }
+        };
     });
-    return { result: result, message: message, id: id, annotation: annotation }
+    return { result: result, message: message, id: id, annotation: annotation };
 }
 
 function makeWholeResult(done) {
