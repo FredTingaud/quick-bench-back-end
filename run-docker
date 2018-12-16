@@ -23,6 +23,8 @@ elif [ $4 == 14 ]; then
     VERSION="-std=c++14"
 elif [ $4 == 17 ]; then
     VERSION="-std=c++1z"
+elif [ $4 == 20 ]; then
+    VERSION="-std=c++2a"
 else
     VERSION="-std=c++98 -Werror=c++11-extensions"
 fi
