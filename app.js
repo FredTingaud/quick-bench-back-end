@@ -3,7 +3,9 @@
 var express = require('express');
 var cors = require('cors');
 var fs = require('fs');
+const path = require('path');
 var app = express();
+app.use(express.static(path.join(__dirname, 'quick-bench-front-end', 'build')));
 var exec = require('child_process').exec;
 var sha1 = require('sha1');
 var bodyParser = require('body-parser');
