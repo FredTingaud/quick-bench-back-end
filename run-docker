@@ -2,7 +2,9 @@
 
 set -e
 
-FILE=`realpath $1`
+LOCAL_FILE=`realpath $1`
+
+TARGET_FILE="$BENCH_ROOT/$1"
 
 if ! [[ $2 == "clang-"?"."? || $2 == "gcc-"?"."? ]] ; then
     >&2 echo "Unknown compiler"
@@ -35,18 +37,20 @@ else
     VERSION="-std=c++98 -Werror=c++11-extensions"
 fi
 
-LOCK=$FILE.lock
+LOCK=$LOCAL_FILE.lock
 lockfile $LOCK
-INFILE=$FILE.cpp
-OUTFILE=$FILE.out
-CIDFILE=$FILE.cid
-PERFFILE=$FILE.perf
-FUNCFILE=$FILE.func
+INFILE=$TARGET_FILE.cpp
+OUTFILE=$LOCAL_FILE.out
+TARG_OUTFILE=$TARGET_FILE.out
+CIDFILE=$LOCAL_FILE.cid
+LOC_PERFFILE=$LOCAL_FILE.perf
+PERFFILE=$TARGET_FILE.perf
+FUNCFILE=$TARGET_FILE.func
 if [ $6 = true ] && [ -f $OUTFILE ]; then
     rm $OUTFILE
-    rm -f $PERFFILE
+    rm -f $LOC_PERFFILE
 fi
-if [ -f $OUTFILE ] && ([ $5 = false ] || [ -f $PERFFILE ]); then
+if [ -f $OUTFILE ] && ([ $5 = false ] || [ -f $LOC_PERFFILE ]); then
     >&2 echo "Showing cached results"
 else
     touch $OUTFILE
@@ -55,8 +59,8 @@ else
     MEMORY_LIMITS='--memory=500m --cpu-period=100000 --cpu-quota=25000'
 
     if [ $5 = true ]; then
-        touch $PERFFILE
-        chmod 666 $PERFFILE
+        touch $LOC_PERFFILE
+        chmod 666 $LOC_PERFFILE
         ANNOTATE="--security-opt seccomp=seccomp.json -v $PERFFILE:/home/builder/bench.perf -v $FUNCFILE:/home/builder/bench.func"
         ANNOTATE_CMD=" && ./annotate"
         ANNOTATE_RECORD="perf record -g"
@@ -66,7 +70,7 @@ else
     else
         BUILD_COMMAND=build
     fi
-    docker run --rm $ANNOTATE -v $INFILE:/home/builder/bench-file.cpp $MEMORY_LIMITS --cidfile=$CIDFILE -v $OUTFILE:/home/builder/bench.out -t fredtingaud/quick-bench:$2 /bin/bash -c "./$BUILD_COMMAND $OPTIM $VERSION && $ANNOTATE_RECORD ./run $ANNOTATE_CMD"
+    docker run --rm $ANNOTATE -v $INFILE:/home/builder/bench-file.cpp $MEMORY_LIMITS --cidfile=$CIDFILE -v $TARG_OUTFILE:/home/builder/bench.out -t fredtingaud/quick-bench:$2 /bin/bash -c "./$BUILD_COMMAND $OPTIM $VERSION && $ANNOTATE_RECORD ./run $ANNOTATE_CMD"
     rm $CIDFILE
 fi
 
