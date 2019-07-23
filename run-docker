@@ -45,7 +45,7 @@ else
 fi
 
 LOCK=$LOCAL_FILE.lock
-lockfile $LOCK<<<<<<< HEAD
+lockfile $LOCK
 INFILE=$TARGET_FILE.cpp
 OUTFILE=$LOCAL_FILE.out
 TARG_OUTFILE=$TARGET_FILE.out
