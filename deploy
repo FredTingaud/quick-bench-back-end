@@ -2,7 +2,7 @@
 
 sudo yum update -y
 sudo yum install -y docker procmail
-sudo curl --silent --location https://rpm.nodesource.com/setup_7.x | sudo bash -
+sudo curl --silent --location https://rpm.nodesource.com/setup_8.x | sudo bash -
 sudo yum install -y nodejs
 cd /srv/quick-bench-back-end/
 sudo service docker start
