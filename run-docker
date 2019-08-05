@@ -6,16 +6,23 @@ LOCAL_FILE=`realpath $1`
 
 TARGET_FILE="$BENCH_ROOT/$1"
 
-if ! [[ $2 == "clang-"?"."? || $2 == "gcc-"?"."? ]] ; then
+COMPILER=$2
+OPTIM_FLAG=$3
+VERSION_FLAG=$4
+RECORD_PERF=$5
+CLEAN_CACHE=$6
+LIB_VERSION=$7
+
+if ! [[ $COMPILER == "clang-"?"."? || $COMPILER == "gcc-"?"."? ]] ; then
     >&2 echo "Unknown compiler"
     exit 1
 fi
 
-if [ $3 == 1 ]; then
+if [ $OPTIM_FLAG == 1 ]; then
     OPTIM="-O1"
-elif [ $3 == 2 ]; then
+elif [ $OPTIM_FLAG == 2 ]; then
     OPTIM="-O2"
-elif [ $3 == 3 ]; then
+elif [ $OPTIM_FLAG == 3 ]; then
     OPTIM="-O3"
 elif [ $3 == "S" ]; then
     OPTIM="-Os"
@@ -25,20 +32,20 @@ elif [ $3 == "F" ]; then
     OPTIM="-Ofast"
 fi
 
-if [ $4 == 11 ]; then
+if [ $VERSION_FLAG == 11 ]; then
     VERSION="-std=c++11"
-elif [ $4 == 14 ]; then
+elif [ $VERSION_FLAG == 14 ]; then
     VERSION="-std=c++14"
-elif [ $4 == 17 ]; then
+elif [ $VERSION_FLAG == 17 ]; then
     VERSION="-std=c++1z"
-elif [ $4 == 20 ]; then
+elif [ $VERSION_FLAG == 20 ]; then
     VERSION="-std=c++2a"
 else
     VERSION="-std=c++98 -Werror=c++11-extensions"
 fi
 
 LOCK=$LOCAL_FILE.lock
-lockfile $LOCK
+lockfile $LOCK<<<<<<< HEAD
 INFILE=$TARGET_FILE.cpp
 OUTFILE=$LOCAL_FILE.out
 TARG_OUTFILE=$TARGET_FILE.out
@@ -46,11 +53,11 @@ CIDFILE=$LOCAL_FILE.cid
 LOC_PERFFILE=$LOCAL_FILE.perf
 PERFFILE=$TARGET_FILE.perf
 FUNCFILE=$TARGET_FILE.func
-if [ $6 = true ] && [ -f $OUTFILE ]; then
+if [ $CLEAN_CACHE = true ] && [ -f $OUTFILE ]; then
     rm $OUTFILE
     rm -f $LOC_PERFFILE
 fi
-if [ -f $OUTFILE ] && ([ $5 = false ] || [ -f $LOC_PERFFILE ]); then
+if [ -f $OUTFILE ] && ([ $RECORD_PERF = false ] || [ -f $LOC_PERFFILE ]); then
     >&2 echo "Showing cached results"
 else
     touch $OUTFILE
@@ -58,19 +65,19 @@ else
 
     MEMORY_LIMITS='--memory=500m --cpu-period=100000 --cpu-quota=25000'
 
-    if [ $5 = true ]; then
+    if [ $RECORD_PERF = true ]; then
         touch $LOC_PERFFILE
         chmod 666 $LOC_PERFFILE
         ANNOTATE="--security-opt seccomp=seccomp.json -v $PERFFILE:/home/builder/bench.perf -v $FUNCFILE:/home/builder/bench.func"
         ANNOTATE_CMD=" && ./annotate"
         ANNOTATE_RECORD="perf record -g"
     fi
-    if [[ $7 == llvm ]] && [[ $2 == clang* ]]; then
+    if [[ $LIB_VERSION == llvm ]] && [[ $COMPILER == clang* ]]; then
         BUILD_COMMAND=build-libcxx
     else
         BUILD_COMMAND=build
     fi
-    docker run --rm $ANNOTATE -v $INFILE:/home/builder/bench-file.cpp $MEMORY_LIMITS --cidfile=$CIDFILE -v $TARG_OUTFILE:/home/builder/bench.out -t fredtingaud/quick-bench:$2 /bin/bash -c "./$BUILD_COMMAND $OPTIM $VERSION && $ANNOTATE_RECORD ./run $ANNOTATE_CMD"
+    docker run --rm $ANNOTATE -v $INFILE:/home/builder/bench-file.cpp $MEMORY_LIMITS --cidfile=$CIDFILE -v $TARG_OUTFILE:/home/builder/bench.out -t fredtingaud/quick-bench:$COMPILER /bin/bash -c "./$BUILD_COMMAND $OPTIM $VERSION && $ANNOTATE_RECORD ./run $ANNOTATE_CMD"
     rm $CIDFILE
 fi
 
