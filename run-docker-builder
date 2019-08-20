@@ -1,0 +1,68 @@
+#!/bin/bash
+
+set -e
+
+LOCAL_FILE=`realpath $1`
+
+TARGET_FILE="$BENCH_ROOT/$1"
+
+>&2 echo "TARGET_FILE=$TARGET_FILE"
+
+COMPILER=$2
+OPTIM_FLAG=$3
+VERSION_FLAG=$4
+CLEAN_CACHE=$5
+LIB_VERSION=$6
+
+if ! [[ $COMPILER == "clang-"?"."? || $COMPILER == "gcc-"?"."? ]] ; then
+    >&2 echo "Unknown compiler"
+    exit 1
+fi
+
+if [ $OPTIM_FLAG == 1 ]; then
+    OPTIM="-O1"
+elif [ $OPTIM_FLAG == 2 ]; then
+    OPTIM="-O2"
+elif [ $OPTIM_FLAG == 3 ]; then
+    OPTIM="-O3"
+fi
+
+if [ $VERSION_FLAG == 11 ]; then
+    VERSION="-std=c++11"
+elif [ $VERSION_FLAG == 14 ]; then
+    VERSION="-std=c++14"
+elif [ $VERSION_FLAG == 17 ]; then
+    VERSION="-std=c++1z"
+elif [ $VERSION_FLAG == 20 ]; then
+    VERSION="-std=c++2a"
+else
+    VERSION="-std=c++98 -Werror=c++11-extensions"
+fi
+
+LOCK=$LOCAL_FILE.lock
+lockfile $LOCK
+INFILE=$TARGET_FILE.cpp
+OUTFILE=$LOCAL_FILE.out
+TARG_OUTFILE=$TARGET_FILE.out
+CIDFILE=$LOCAL_FILE.cid
+if [ $CLEAN_CACHE = true ] && [ -f $OUTFILE ]; then
+    rm $OUTFILE
+fi
+if [ -f $OUTFILE ] && ([ $RECORD_PERF = false ] || [ -f $PERFFILE ]); then
+    >&2 echo "Showing cached results"
+else
+    touch $OUTFILE
+    chmod 666 $OUTFILE
+
+    MEMORY_LIMITS='--memory=500m --cpu-period=100000 --cpu-quota=25000'
+
+    if [[ $LIB_VERSION == llvm ]] && [[ $COMPILER == clang* ]]; then
+        BUILD_COMMAND=time-build-libcxx
+    else
+        BUILD_COMMAND=time-build
+    fi
+    docker run --rm $ANNOTATE -v $INFILE:/home/builder/bench-file.cpp $MEMORY_LIMITS --cidfile=$CIDFILE -v $TARG_OUTFILE:/home/builder/bench.out -t fredtingaud/quick-bench:$COMPILER-time /bin/bash -c "./$BUILD_COMMAND $OPTIM $VERSION"
+    rm $CIDFILE
+fi
+
+rm -f $LOCK
