@@ -109,6 +109,7 @@ function execute(fileName, request) {
                 resolve({
                     res: fs.readFileSync(fileName + '.out'),
                     stdout: stderr,
+                    id: encodeName(makeCodeName(request))
                 });
             }
         });
@@ -125,11 +126,11 @@ function groupResults(results) {
     });
 }
 
-function makeCodesName(unit) {
+function makeCodeName(unit) {
     return sha1(unit.code + unit.compiler + unit.optim + unit.cppVersion + unit.lib);
 }
 function makeName(request) {
-    return sha1(request.units.reduce(u => makeCodesName(u)) + request.protocolVersion);
+    return sha1(request.units.reduce(u => makeCodeName(u)) + request.protocolVersion);
 }
 
 function wrapCode(inputCode) {
@@ -181,7 +182,7 @@ async function benchmarkOneBuild(unit) {
     if (unit.code.length > MAX_CODE_LENGTH) {
         return Promise.reject(`\u001b[0m\u001b[0;1;31mError: Unauthorized code length in {$unit.title}.\u001b[0m\u001b[1m`);
     }
-    let name = makeCodesName(unit);
+    let name = makeCodeName(unit);
     console.log('Bench ' + name + ' < ' + optionsToString(unit));
     var dir = WRITE_PATH + '/' + name.substr(0, 2);
     var fileName = dir + '/' + name;
@@ -194,7 +195,7 @@ async function benchmarkOneBuild(unit) {
 }
 
 async function benchmark(request, header) {
-    return request.units.map(u => benchmarkOneBuild(u));
+    return await Promise.all(request.units.map(u => benchmarkOneBuild(u)));
 }
 
 async function reload(encodedName) {
@@ -205,16 +206,32 @@ async function reload(encodedName) {
     return await groupResults(values);
 }
 
-function makeGraphResult(values, message, id, annotation) {
-    let result = { context: values.context };
-    let noopTime = values.benchmarks[values.benchmarks.length - 1].cpu_time;
-    result.benchmarks = values.benchmarks.map(obj => {
-        return {
-            name: obj.name,
-            cpu_time: obj.cpu_time / noopTime
-        };
-    });
-    return { result: result, message: message, id: id, annotation: annotation };
+function readBuildResults(values) {
+    if (values.res == null) return {};
+    let results = values.res.toString().split('\n');
+    let times = [];
+    let memories = [];
+    for (let i = 0; i < results.length; i++) {
+	let s = results[i].split('\t');
+	if (s.length === 2) {
+	    times.push(s[0]);
+	    memories.push(s[1]);
+	}
+    }
+    return {
+	times: times,
+	memories: memories,
+    };
+}
+
+function makeBuildGraphResult(values) {
+    let result = values.map(v => readBuildResults(v));
+    let message = values.reduce((r, v) => r + '\n' + v.stdout, '');
+    let id = sha1(values.reduce((r, v) => r + v.id, ''));
+    return { result: result,
+	     message: message,
+	     id: id
+	   };
 }
 
 function makeWholeResult(done) {
@@ -233,7 +250,7 @@ function makeWholeResult(done) {
 
 app.post('/', upload.array(), function (req, res) {
     Promise.resolve(benchmark(req.body, req.headers))
-        .then((done) => res.json(makeGraphResult(JSON.parse(done.res), done.stdout, done.id, done.annotation)))
+        .then((done) => res.json(makeBuildGraphResult(done)))
         .catch((err) => res.json({ message: err }));
 });
 

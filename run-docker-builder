@@ -6,8 +6,6 @@ LOCAL_FILE=`realpath $1`
 
 TARGET_FILE="$BENCH_ROOT/$1"
 
->&2 echo "TARGET_FILE=$TARGET_FILE"
-
 COMPILER=$2
 OPTIM_FLAG=$3
 VERSION_FLAG=$4
@@ -48,7 +46,7 @@ CIDFILE=$LOCAL_FILE.cid
 if [ $CLEAN_CACHE = true ] && [ -f $OUTFILE ]; then
     rm $OUTFILE
 fi
-if [ -f $OUTFILE ] && ([ $RECORD_PERF = false ] || [ -f $PERFFILE ]); then
+if [ -f $OUTFILE ] && [[ $RECORD_PERF -eq false || -f $PERFFILE ]]; then
     >&2 echo "Showing cached results"
 else
     touch $OUTFILE
