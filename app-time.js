@@ -117,13 +117,10 @@ function execute(fileName, request) {
 }
 
 function groupResults(results) {
-    return new Promise((resolve, reject) => {
-        let code = unwrapCode(results[0]);
-        let options = results[1];
-        let graph = results[2];
-        let annotation = results[3];
-        resolve({ code: code, options: JSON.parse(options), graph: JSON.parse(graph), annotation: annotation });
-    });
+    let code = results[0];
+    let options = results[1];
+    let graph = results[2];
+    return { code: code, options: JSON.parse(options), graph: graph };
 }
 
 function makeCodeName(unit) {
@@ -177,16 +174,20 @@ function getFunctions(code) {
     return content;
 }
 
+function filename(name) {
+    let dir = WRITE_PATH + '/' + name.substr(0, 2);
+    return  dir + '/' + name;
+}
+
 async function benchmarkOneBuild(unit) {
     try {
-    if (unit.code.length > MAX_CODE_LENGTH) {
-        return Promise.reject(`\u001b[0m\u001b[0;1;31mError: Unauthorized code length in {$unit.title}.\u001b[0m\u001b[1m`);
-    }
-    let name = makeCodeName(unit);
-    console.log('Bench ' + name + ' < ' + optionsToString(unit));
-    var dir = WRITE_PATH + '/' + name.substr(0, 2);
-    var fileName = dir + '/' + name;
-	await Promise.resolve(write(fileName + '.cpp', unit.code));
+	if (unit.code.length > MAX_CODE_LENGTH) {
+            return Promise.reject(`\u001b[0m\u001b[0;1;31mError: Unauthorized code length in {$unit.title}.\u001b[0m\u001b[1m`);
+	}
+	let name = makeCodeName(unit);
+	console.log('Bench ' + name + ' < ' + optionsToString(unit));
+	let filename = this.filename(name);
+	await write(fileName + '.cpp', unit.code);
 	await write(fileName + '.opt', optionsToString(unit));
 	return await execute(fileName, unit);
     } catch (e) {
@@ -198,12 +199,16 @@ async function benchmark(request, header) {
     return await Promise.all(request.units.map(u => benchmarkOneBuild(u)));
 }
 
+function reloadOne(id) {
+    const fileName = filename(id);
+    const values = await Promise.all([read(fileName + '.cpp'), read(fileName + '.opt'), read(fileName + '.out')]);
+    return groupResults(values);
+}
+
 async function reload(encodedName) {
-    let name = decodeName(encodedName);
-    var dir = WRITE_PATH + '/' + name.substr(0, 2);
-    var fileName = dir + '/' + name;
-    const values = await Promise.all([read(fileName + '.cpp'), read(fileName + '.opt'), read(fileName + '.out'), read(fileName + '.perf', true)]);
-    return await groupResults(values);
+    let fileName = filename(decodeName(encodedName));
+    const ids = await read(fileName + '.res');
+    return ids.map(id => reloadOne(id));
 }
 
 function readBuildResults(values) {
@@ -227,7 +232,9 @@ function readBuildResults(values) {
 function makeBuildGraphResult(values) {
     let result = values.map(v => readBuildResults(v));
     let message = values.reduce((r, v) => r + '\n' + v.stdout, '');
-    let id = sha1(values.reduce((r, v) => r + v.id, ''));
+    let idsList = values.reduce((r, v) => r + '\n' + v.id, '');
+    let id = sha1(idsList);
+    await write(filename(id) + '.res', idsList);
     return { result: result,
 	     message: message,
 	     id: id
