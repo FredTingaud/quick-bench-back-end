@@ -7,7 +7,8 @@
     "test": "test"
   },
   "scripts": {
-    "test": "mocha"
+    "test": "mocha --exit",
+    "system-test": "mocha system-test --exit"
   },
   "repository": {
     "type": "git",
@@ -31,6 +32,6 @@
     "sha1": "^1.1.1"
   },
   "devDependencies": {
-    "mocha": "^6.2.0"
+    "mocha": "^6.2.1"
   }
 }
