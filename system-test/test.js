@@ -16,6 +16,10 @@ describe('run docker with version', function () {
 	const done = await app.execute('system-test/testfile/test', request);
 	const parsed = JSON.parse(done.res);
 	expect(parsed.benchmarks).to.have.length(2);
+	expect(done.annotation).to.be.ok;
+	expect(done.annotation.split('\n')).to.have.lengthOf.above(7);
+	expect(done.annotation).to.have.string('BM_StringCreation');
+	expect(done.annotation).to.have.string('BM_StringCopy');
 	//	expect(done.stdout).to.be.empty; // Removed because of a Docker message on my Ubuntu version.
 	console.log(done.stdout);
 	expect(done.annotation).to.be.ok;
