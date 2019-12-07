@@ -15,6 +15,12 @@ elif [ $3 == 2 ]; then
     OPTIM="-O2"
 elif [ $3 == 3 ]; then
     OPTIM="-O3"
+elif [ $3 == "S" ]; then
+    OPTIM="-Os"
+elif [ $3 == "G" ]; then
+    OPTIM="-Og"
+elif [ $3 == "F" ]; then
+    OPTIM="-Ofast"
 fi
 
 if [ $4 == 11 ]; then
