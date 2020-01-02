@@ -186,7 +186,7 @@ async function benchmarkOneBuild(unit) {
 	}
 	let name = makeCodeName(unit);
 	console.log('Bench ' + name + ' < ' + optionsToString(unit));
-	let filename = this.filename(name);
+	let fileName = filename(name);
 	await write(fileName + '.cpp', unit.code);
 	await write(fileName + '.opt', optionsToString(unit));
 	return await execute(fileName, unit);
@@ -199,7 +199,7 @@ async function benchmark(request, header) {
     return await Promise.all(request.units.map(u => benchmarkOneBuild(u)));
 }
 
-function reloadOne(id) {
+async function reloadOne(id) {
     const fileName = filename(id);
     const values = await Promise.all([read(fileName + '.cpp'), read(fileName + '.opt'), read(fileName + '.out')]);
     return groupResults(values);
@@ -234,7 +234,7 @@ function makeBuildGraphResult(values) {
     let message = values.reduce((r, v) => r + '\n' + v.stdout, '');
     let idsList = values.reduce((r, v) => r + '\n' + v.id, '');
     let id = sha1(idsList);
-    await write(filename(id) + '.res', idsList);
+    write(filename(id) + '.res', idsList);
     return { result: result,
 	     message: message,
 	     id: id
