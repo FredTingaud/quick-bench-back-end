@@ -231,14 +231,15 @@ function readBuildResults(values) {
 
 function makeBuildGraphResult(values) {
     let result = values.map(v => readBuildResults(v));
-    let message = values.reduce((r, v) => r + '\n' + v.stdout, '');
-    let idsList = values.reduce((r, v) => r + '\n' + v.id, '');
+    let message = values.map(v => v.stdout).reduce((r, v) => r + '\n' + v);
+    let idsList = values.map(v => v.id).reduce((r, v) => r + '\n' + v);
     let id = sha1(idsList);
     write(filename(id) + '.res', idsList);
-    return { result: result,
-	     message: message,
-	     id: id
-	   };
+    return {
+        result: result,
+        message: message,
+        id: encode(id)
+    };
 }
 
 function makeWholeResult(done) {
@@ -252,7 +253,7 @@ function makeWholeResult(done) {
         protocolVersion: done.options.protocolVersion
     };
 
-    return Object.assign(result, makeGraphResult(done.graph, '', encodeName(makeName(result)), done.annotation));
+    return Object.assign(result, makeBuildGraphResult(done.graph, '', encodeName(makeName(result)), done.annotation));
 }
 
 app.post('/', upload.array(), function (req, res) {
