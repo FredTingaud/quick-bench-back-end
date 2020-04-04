@@ -74,13 +74,13 @@ function read(fileName, acceptMissing) {
     });
 }
 
-function runDockerCommand(fileName, request) {
-    return './run-docker-builder ' + fileName + ' ' + request.compiler + ' ' + request.optim + ' ' + request.cppVersion + ' ' + (request.isAnnotated || false) + ' ' + (request.force || false) + ' ' + (request.lib || 'gnu');
+function runDockerCommand(fileName, request, force) {
+    return './run-docker-builder ' + fileName + ' ' + request.compiler + ' ' + request.optim + ' ' + request.cppVersion + ' ' + (request.isAnnotated || false) + ' ' + (force || false) + ' ' + (request.lib || 'gnu');
 }
 
-function optionsToString(request) {
+function optionsToString(request, protocolVersion) {
     let options = {
-        "protocolVersion": request.protocolVersion,
+        "protocolVersion": protocolVersion,
         "compiler": request.compiler,
         "optim": request.optim,
         "cppVersion": request.cppVersion,
@@ -90,14 +90,14 @@ function optionsToString(request) {
     return JSON.stringify(options);
 }
 
-function execute(fileName, request) {
+function execute(fileName, request, protocolVersion, force) {
     let options = {
         timeout: 60000,
         killSignal: 'SIGKILL'
     };
     return new Promise((resolve, reject) => {
         console.time(fileName);
-        return exec(runDockerCommand(fileName, request), options, function (err, stdout, stderr) {
+        return exec(runDockerCommand(fileName, request, force), options, function (err, stdout, stderr) {
             if (err) {
                 console.timeEnd(fileName);
                 console.log('Bench failed ' + fileName);
@@ -109,25 +109,25 @@ function execute(fileName, request) {
                 resolve({
                     res: fs.readFileSync(fileName + '.out'),
                     stdout: stderr,
-                    id: encodeName(makeCodeName(request))
+                    id: encodeName(makeCodeName(request, protocolVersion))
                 });
             }
         });
     });
 }
 
-function groupResults(results) {
+function groupResults(results, id) {
     let code = results[0];
     let options = results[1];
     let graph = results[2];
-    return { code: code, options: JSON.parse(options), graph: graph };
+    return { code: code, options: JSON.parse(options), graph: graph, id: id };
 }
 
-function makeCodeName(unit) {
-    return sha1(unit.code + unit.compiler + unit.optim + unit.cppVersion + unit.lib);
+function makeCodeName(tab, protocolVersion) {
+    return sha1(tab.code + tab.compiler + tab.optim + tab.cppVersion + tab.lib + protocolVersion);
 }
 function makeName(request) {
-    return sha1(request.units.reduce(u => makeCodeName(u)) + request.protocolVersion);
+    return sha1(request.tabs.reduce(u => makeCodeName(u, request.protocolVersion)) + request.protocolVersion);
 }
 
 function wrapCode(inputCode) {
@@ -179,36 +179,36 @@ function filename(name) {
     return  dir + '/' + name;
 }
 
-async function benchmarkOneBuild(unit) {
+async function benchmarkOneBuild(tab, protocolVersion, force) {
     try {
-	if (unit.code.length > MAX_CODE_LENGTH) {
+	if (tab.code.length > MAX_CODE_LENGTH) {
             return Promise.reject(`\u001b[0m\u001b[0;1;31mError: Unauthorized code length in {$unit.title}.\u001b[0m\u001b[1m`);
 	}
-	let name = makeCodeName(unit);
-	console.log('Bench ' + name + ' < ' + optionsToString(unit));
+	let name = makeCodeName(tab, protocolVersion);
+	console.log('Bench ' + name + ' < ' + optionsToString(tab, protocolVersion));
 	let fileName = filename(name);
-	await write(fileName + '.cpp', unit.code);
-	await write(fileName + '.opt', optionsToString(unit));
-	return await execute(fileName, unit);
+	await write(fileName + '.cpp', tab.code);
+	await write(fileName + '.opt', optionsToString(tab, protocolVersion));
+	return await execute(fileName, tab, protocolVersion, force);
     } catch (e) {
 	return { stdout: e };
     }
 }
 
 async function benchmark(request, header) {
-    return await Promise.all(request.units.map(u => benchmarkOneBuild(u)));
+    return await Promise.all(request.tabs.map(u => benchmarkOneBuild(u, request.protocolVersion, request.force)));
 }
 
 async function reloadOne(id) {
     const fileName = filename(id);
     const values = await Promise.all([read(fileName + '.cpp'), read(fileName + '.opt'), read(fileName + '.out')]);
-    return groupResults(values);
+    return groupResults(values, id);
 }
 
 async function reload(encodedName) {
     let fileName = filename(decodeName(encodedName));
     const ids = await read(fileName + '.res');
-    return ids.split("\n").map(id => reloadOne(decodeName(id)));
+    return await Promise.all(ids.split("\n").map(id => reloadOne(decodeName(id))));
 }
 
 function readBuildResults(values) {
@@ -248,7 +248,6 @@ function makeOneResult(done) {
         compiler: done.options.compiler,
         optim: done.options.optim,
         cppVersion: done.options.cppVersion,
-        isAnnotated: done.options.isAnnotated,
         lib: done.options.lib,
         protocolVersion: done.options.protocolVersion
     };
@@ -257,9 +256,9 @@ function makeOneResult(done) {
 function makeWholeResult(done) {
     return Object.assign(done.map(d => makeOneResult(d)), makeBuildGraphResult(done.map(d => {
         return {
-            res: d.graph,
+            result: d.graph,
             stdout: '',
-            id: encodeName(makeName(result))
+            id: encodeName(d.id)
         };
     })));
 }
