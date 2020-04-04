@@ -254,9 +254,9 @@ function makeOneResult(done) {
 }
 
 function makeWholeResult(done) {
-    return Object.assign(done.map(d => makeOneResult(d)), makeBuildGraphResult(done.map(d => {
+    return Object.assign({ tabs: done.map(d => makeOneResult(d)) }, makeBuildGraphResult(done.map(d => {
         return {
-            result: d.graph,
+            res: d.graph,
             stdout: '',
             id: encodeName(d.id)
         };
