@@ -208,7 +208,7 @@ async function reloadOne(id) {
 async function reload(encodedName) {
     let fileName = filename(decodeName(encodedName));
     const ids = await read(fileName + '.res');
-    return ids.map(id => reloadOne(id));
+    return ids.split("\n").map(id => reloadOne(decodeName(id)));
 }
 
 function readBuildResults(values) {
@@ -238,12 +238,12 @@ function makeBuildGraphResult(values) {
     return {
         result: result,
         message: message,
-        id: encode(id)
+        id: encodeName(id)
     };
 }
 
-function makeWholeResult(done) {
-    let result = {
+function makeOneResult(done) {
+    return {
         code: done.code,
         compiler: done.options.compiler,
         optim: done.options.optim,
@@ -252,8 +252,16 @@ function makeWholeResult(done) {
         lib: done.options.lib,
         protocolVersion: done.options.protocolVersion
     };
+}
 
-    return Object.assign(result, makeBuildGraphResult(done.graph, '', encodeName(makeName(result)), done.annotation));
+function makeWholeResult(done) {
+    return Object.assign(done.map(d => makeOneResult(d)), makeBuildGraphResult(done.map(d => {
+        return {
+            res: d.graph,
+            stdout: '',
+            id: encodeName(makeName(result))
+        };
+    })));
 }
 
 app.post('/', upload.array(), function (req, res) {
