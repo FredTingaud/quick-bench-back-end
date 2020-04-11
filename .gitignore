@@ -35,3 +35,15 @@ jspm_packages
 
 # Optional REPL history
 .node_repl_history
+
+
+public/vs
+
+# Visual Studio files
+.vs/
+visual/
+bin
+obj
+*.sln
+*.njsproj
+
