@@ -277,6 +277,10 @@ app.get('/get/:id', upload.array(), function (req, res) {
 });
 
 app.get('/:id', upload.array(), function (req, res) {
+    res.redirect(`/b/${req.params.id}`);
+});
+
+app.get('/b/:id', upload.array(), function (req, res) {
     res.sendFile(path.join(__dirname, 'quick-bench-front-end', 'build', 'index.html'));
 });
 
