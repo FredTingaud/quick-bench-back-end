@@ -276,6 +276,10 @@ app.get('/get/:id', upload.array(), function (req, res) {
         .catch(() => res.json({ message: 'Could not load given id' }));
 });
 
+app.get('/:id', upload.array(), function (req, res) {
+    res.sendFile(path.join(__dirname, 'quick-bench-front-end', 'build', 'index.html'));
+});
+
 app.listen(3000, function () {
     console.log('Listening to commands');
 });
