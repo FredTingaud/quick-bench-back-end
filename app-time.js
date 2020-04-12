@@ -263,13 +263,13 @@ function makeWholeResult(done) {
     })));
 }
 
-app.post('/', upload.array(), function (req, res) {
+app.post('/build', upload.array(), function (req, res) {
     Promise.resolve(benchmark(req.body, req.headers))
         .then((done) => res.json(makeBuildGraphResult(done)))
         .catch((err) => res.json({ message: err }));
 });
 
-app.get('/get/:id', upload.array(), function (req, res) {
+app.get('/build/:id', upload.array(), function (req, res) {
     console.log('Get ' + req.params.id + ' ' + JSON.stringify(req.headers));
     Promise.resolve(reload(req.params.id))
         .then((done) => res.json(makeWholeResult(done)))
