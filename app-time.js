@@ -74,8 +74,12 @@ function read(fileName, acceptMissing) {
     });
 }
 
+function cleanFilename(text) {
+    return text.replace(/[^\W-]/gi, '_');
+}
+
 function runDockerCommand(fileName, request, force) {
-    return './run-docker-builder ' + fileName + ' ' + request.compiler + ' ' + request.optim + ' ' + request.cppVersion + ' ' + (request.isAnnotated || false) + ' ' + (force || false) + ' ' + (request.lib || 'gnu');
+    return './run-docker-builder ' + fileName + ' ' + request.compiler + ' ' + request.optim + ' ' + request.cppVersion + ' ' + (request.isAnnotated || false) + ' ' + (force || false) + ' ' + (request.lib || 'gnu') + cleanFilename(request.title);
 }
 
 function optionsToString(request, protocolVersion) {
@@ -85,7 +89,8 @@ function optionsToString(request, protocolVersion) {
         "optim": request.optim,
         "cppVersion": request.cppVersion,
         "isAnnotated": request.isAnnotated,
-        "lib": request.lib
+        "lib": request.lib,
+        "title": request.title
     };
     return JSON.stringify(options);
 }
@@ -124,7 +129,7 @@ function groupResults(results, id) {
 }
 
 function makeCodeName(tab, protocolVersion) {
-    return sha1(tab.code + tab.compiler + tab.optim + tab.cppVersion + tab.lib + protocolVersion);
+    return sha1(tab.title + tab.code + tab.compiler + tab.optim + tab.cppVersion + tab.lib + protocolVersion);
 }
 function makeName(request) {
     return sha1(request.tabs.reduce(u => makeCodeName(u, request.protocolVersion)) + request.protocolVersion);
