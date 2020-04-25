@@ -75,11 +75,13 @@ function read(fileName, acceptMissing) {
 }
 
 function cleanFilename(text) {
-    return text.replace(/[^\W-]/gi, '_');
+    if (text === '')
+        return '_';
+    return text.replace(/[^\w-]/gi, '_');
 }
 
 function runDockerCommand(fileName, request, force) {
-    return './run-docker-builder ' + fileName + ' ' + request.compiler + ' ' + request.optim + ' ' + request.cppVersion + ' ' + (request.isAnnotated || false) + ' ' + (force || false) + ' ' + (request.lib || 'gnu') + cleanFilename(request.title);
+    return './run-docker-builder ' + fileName + ' ' + request.compiler + ' ' + request.optim + ' ' + request.cppVersion + ' ' + (request.isAnnotated || false) + ' ' + (force || false) + ' ' + (request.lib || 'gnu') + ' ' + cleanFilename(request.title);
 }
 
 function optionsToString(request, protocolVersion) {
@@ -306,3 +308,4 @@ exports.groupResults = groupResults;
 exports.getFunctions = getFunctions;
 exports.optionsToString = optionsToString;
 exports.execute = execute;
+exports.cleanFilename = cleanFilename;
