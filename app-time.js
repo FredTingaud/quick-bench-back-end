@@ -89,8 +89,7 @@ function optionsToString(request, protocolVersion) {
         "optim": request.optim,
         "cppVersion": request.cppVersion,
         "isAnnotated": request.isAnnotated,
-        "lib": request.lib,
-        "title": request.title
+        "lib": request.lib
     };
     return JSON.stringify(options);
 }
@@ -114,22 +113,23 @@ function execute(fileName, request, protocolVersion, force) {
                 resolve({
                     res: fs.readFileSync(fileName + '.out'),
                     stdout: stderr,
-                    id: encodeName(makeCodeName(request, protocolVersion))
+                    id: encodeName(makeCodeName(request, protocolVersion)),
+                    title: request.title
                 });
             }
         });
     });
 }
 
-function groupResults(results, id) {
+function groupResults(results, id, name) {
     let code = results[0];
     let options = results[1];
     let graph = results[2];
-    return { code: code, options: JSON.parse(options), graph: graph, id: id };
+    return { code: code, options: JSON.parse(options), graph: graph, id: id, title: name };
 }
 
 function makeCodeName(tab, protocolVersion) {
-    return sha1(tab.title + tab.code + tab.compiler + tab.optim + tab.cppVersion + tab.lib + protocolVersion);
+    return sha1(tab.code + tab.compiler + tab.optim + tab.cppVersion + tab.lib + protocolVersion);
 }
 function makeName(request) {
     return sha1(request.tabs.reduce(u => makeCodeName(u, request.protocolVersion)) + request.protocolVersion);
@@ -171,32 +171,32 @@ function decodeName(short) {
 
 function getFunctions(code) {
     RE = /BENCHMARK\s*\(\s*([A-Za-z0-9_]+)\s*\)/g;
-    let content='';
+    let content = '';
     let res;
     while ((res = RE.exec(code)) !== null) {
-        content+= res[1] + '\n';
+        content += res[1] + '\n';
     }
     return content;
 }
 
 function filename(name) {
     let dir = WRITE_PATH + '/' + name.substr(0, 2);
-    return  dir + '/' + name;
+    return dir + '/' + name;
 }
 
 async function benchmarkOneBuild(tab, protocolVersion, force) {
     try {
-	if (tab.code.length > MAX_CODE_LENGTH) {
+        if (tab.code.length > MAX_CODE_LENGTH) {
             return Promise.reject(`\u001b[0m\u001b[0;1;31mError: Unauthorized code length in {$unit.title}.\u001b[0m\u001b[1m`);
-	}
-	let name = makeCodeName(tab, protocolVersion);
-	console.log('Bench ' + name + ' < ' + optionsToString(tab, protocolVersion));
-	let fileName = filename(name);
-	await write(fileName + '.cpp', tab.code);
-	await write(fileName + '.opt', optionsToString(tab, protocolVersion));
-	return await execute(fileName, tab, protocolVersion, force);
+        }
+        let name = makeCodeName(tab, protocolVersion);
+        console.log('Bench ' + name + ' < ' + optionsToString(tab, protocolVersion));
+        let fileName = filename(name);
+        await write(fileName + '.cpp', tab.code);
+        await write(fileName + '.opt', optionsToString(tab, protocolVersion));
+        return await execute(fileName, tab, protocolVersion, force);
     } catch (e) {
-	return { stdout: e };
+        return { stdout: e };
     }
 }
 
@@ -204,16 +204,19 @@ async function benchmark(request, header) {
     return await Promise.all(request.tabs.map(u => benchmarkOneBuild(u, request.protocolVersion, request.force)));
 }
 
-async function reloadOne(id) {
+async function reloadOne(id, name) {
     const fileName = filename(id);
     const values = await Promise.all([read(fileName + '.cpp'), read(fileName + '.opt'), read(fileName + '.out')]);
-    return groupResults(values, id);
+    return groupResults(values, id, name);
 }
 
 async function reload(encodedName) {
     let fileName = filename(decodeName(encodedName));
     const ids = await read(fileName + '.res');
-    return await Promise.all(ids.split("\n").map(id => reloadOne(decodeName(id))));
+    return await Promise.all(ids.split("\n").map(s => {
+        const info = s.split("\t");
+        return reloadOne(decodeName(info[0]), info[1]);
+    }));
 }
 
 function readBuildResults(values) {
@@ -222,22 +225,22 @@ function readBuildResults(values) {
     let times = [];
     let memories = [];
     for (let i = 0; i < results.length; i++) {
-	let s = results[i].split('\t');
-	if (s.length === 2) {
-	    times.push(s[0]);
-	    memories.push(s[1]);
-	}
+        let s = results[i].split('\t');
+        if (s.length === 2) {
+            times.push(s[0]);
+            memories.push(s[1]);
+        }
     }
     return {
-	times: times,
-	memories: memories,
+        times: times,
+        memories: memories,
     };
 }
 
 function makeBuildGraphResult(values) {
     let result = values.map(v => readBuildResults(v));
     let message = values.map(v => v.stdout).reduce((r, v) => r + '\n' + v);
-    let idsList = values.map(v => v.id).reduce((r, v) => r + '\n' + v);
+    let idsList = values.map(v => `${v.id}\t${v.title}`).reduce((r, v) => r + '\n' + v);
     let id = sha1(idsList);
     write(filename(id) + '.res', idsList);
     return {
@@ -254,7 +257,8 @@ function makeOneResult(done) {
         optim: done.options.optim,
         cppVersion: done.options.cppVersion,
         lib: done.options.lib,
-        protocolVersion: done.options.protocolVersion
+        protocolVersion: done.options.protocolVersion,
+        title: done.title
     };
 }
 
