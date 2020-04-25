@@ -9,9 +9,9 @@ TARGET_FILE="$BENCH_ROOT/$1"
 COMPILER=$2
 OPTIM_FLAG=$3
 VERSION_FLAG=$4
-CLEAN_CACHE=$5
-LIB_VERSION=$6
-FILE_NAME=$7.cpp
+CLEAN_CACHE=$6
+LIB_VERSION=$7
+FILE_NAME=$8.cpp
 
 if ! [[ $COMPILER == "clang-"?"."? || $COMPILER == "gcc-"?"."? ]] ; then
     >&2 echo "Unknown compiler"
