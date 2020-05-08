@@ -242,13 +242,13 @@ function readBuildResults(values) {
 
 function makeBuildGraphResult(values) {
     let result = values.map(v => readBuildResults(v));
-    let message = values.map(v => v.stdout).reduce((r, v) => r + '\n' + v);
+    let messages = values.map(v => v.stdout);
     let idsList = values.map(v => `${v.id}\t${v.title}`).reduce((r, v) => r + '\n' + v);
     let id = sha1(idsList);
     write(filename(id) + '.res', idsList);
     return {
         result: result,
-        message: message,
+        messages: messages,
         id: encodeName(id)
     };
 }
