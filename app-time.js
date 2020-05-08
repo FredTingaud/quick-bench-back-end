@@ -114,7 +114,7 @@ function execute(fileName, request, protocolVersion, force) {
                 console.timeEnd(fileName);
                 console.log('Bench done ' + fileName + (stderr.indexOf('cached results') > -1 ? ' from cache' : ''));
                 resolve({
-                    res: fs.readFileSync(fileName + '.out'),
+                    res: fs.readFileSync(fileName + '.build'),
                     stdout: stderr,
                     id: encodeName(makeCodeName(request, protocolVersion)),
                     title: request.title
@@ -209,7 +209,7 @@ async function benchmark(request, header) {
 
 async function reloadOne(id, name) {
     const fileName = filename(id);
-    const values = await Promise.all([read(fileName + '.cpp'), read(fileName + '.opt'), read(fileName + '.out')]);
+    const values = await Promise.all([read(fileName + '.cpp'), read(fileName + '.opt'), read(fileName + '.build')]);
     return groupResults(values, id, name);
 }
 

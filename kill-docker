@@ -5,6 +5,7 @@ FILE=$1.cid
 if [ -f $FILE ]; then
     docker kill `cat $FILE`
     rm $1.out
+    rm $1.build
     rm -f $1.perf
     rm $FILE
 fi

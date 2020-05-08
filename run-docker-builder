@@ -41,8 +41,8 @@ fi
 LOCK=$LOCAL_FILE.lock
 lockfile $LOCK
 INFILE=$TARGET_FILE.cpp
-OUTFILE=$LOCAL_FILE.out
-TARG_OUTFILE=$TARGET_FILE.out
+OUTFILE=$LOCAL_FILE.build
+TARG_OUTFILE=$TARGET_FILE.build
 CIDFILE=$LOCAL_FILE.cid
 if [ $CLEAN_CACHE = true ] && [ -f $OUTFILE ]; then
     rm $OUTFILE
@@ -60,7 +60,7 @@ else
     else
         BUILD_COMMAND=time-build
     fi
-    docker run --rm $ANNOTATE -v $INFILE:/home/builder/$FILE_NAME $MEMORY_LIMITS --cidfile=$CIDFILE -v $TARG_OUTFILE:/home/builder/bench.out -t fredtingaud/quick-bench:$COMPILER /bin/bash -c "./$BUILD_COMMAND $FILE_NAME $OPTIM $VERSION"
+    docker run --rm $ANNOTATE -v $INFILE:/home/builder/$FILE_NAME $MEMORY_LIMITS --cidfile=$CIDFILE -v $TARG_OUTFILE:/home/builder/bench.build -t fredtingaud/quick-bench:$COMPILER /bin/bash -c "./$BUILD_COMMAND $FILE_NAME $OPTIM $VERSION"
     rm $CIDFILE
 fi
 
