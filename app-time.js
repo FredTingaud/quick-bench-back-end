@@ -10,6 +10,7 @@ var exec = require('child_process').exec;
 var sha1 = require('sha1');
 var bodyParser = require('body-parser');
 var multer = require('multer');
+const PORT = process.env.BB_PORT | 4000;
 
 var upload = multer();
 
@@ -295,8 +296,8 @@ app.get('/b/:id', upload.array(), function (req, res) {
     res.sendFile(path.join(__dirname, 'quick-bench-front-end', 'build', 'index.html'));
 });
 
-app.listen(3000, function () {
-    console.log('Listening to commands');
+app.listen(PORT, function () {
+    console.log(`Listening to commands on port ${PORT}`);
 });
 
 exports.makeName = makeName;
