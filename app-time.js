@@ -278,14 +278,14 @@ function makeWholeResult(done) {
 app.post('/build', upload.array(), function (req, res) {
     Promise.resolve(benchmark(req.body, req.headers))
         .then((done) => res.json(makeBuildGraphResult(done)))
-        .catch((err) => res.json({ message: err }));
+        .catch((err) => res.json({ messages: [err] }));
 });
 
 app.get('/build/:id', upload.array(), function (req, res) {
     console.log('Get ' + req.params.id + ' ' + JSON.stringify(req.headers));
     Promise.resolve(reload(req.params.id))
         .then((done) => res.json(makeWholeResult(done)))
-        .catch(() => res.json({ message: 'Could not load given id' }));
+        .catch(() => res.json({ messages: [`Could not load ${req.params.id}`] }));
 });
 
 app.get('/:id', upload.array(), function (req, res) {
