@@ -12,6 +12,8 @@ VERSION_FLAG=$4
 CLEAN_CACHE=$6
 LIB_VERSION=$7
 FILE_NAME=$8.cpp
+RECORD_ASM=$9
+RECORD_PP=${10}
 
 if ! [[ $COMPILER == "clang-"?"."? || $COMPILER == "gcc-"?"."? ]] ; then
     >&2 echo "Unknown compiler"
@@ -43,24 +45,55 @@ lockfile $LOCK
 INFILE=$TARGET_FILE.cpp
 OUTFILE=$LOCAL_FILE.build
 TARG_OUTFILE=$TARGET_FILE.build
+INCLUDES=$LOCAL_FILE.inc
+TARG_INCLUDES=$TARGET_FILE.inc
+ASM=$LOCAL_FILE.s
+TARG_ASM=$TARGET_FILE.s
+PP=$LOCAL_FILE.i
+TARG_PP=$TARGET_FILE.i
 CIDFILE=$LOCAL_FILE.cid
 if [ $CLEAN_CACHE = true ] && [ -f $OUTFILE ]; then
     rm $OUTFILE
+    rm -f $INCLUDES
+    rm -f $ASM
+    rm -f $PP
 fi
 if [ -f $OUTFILE ] && [[ $RECORD_PERF -eq false || -f $PERFFILE ]]; then
     >&2 echo "Showing cached results"
 else
     touch $OUTFILE
     chmod 666 $OUTFILE
+    touch $INCLUDES
+    chmod 666 $INCLUDES
 
     MEMORY_LIMITS='--memory=500m --cpu-period=100000 --cpu-quota=25000'
 
     if [[ $LIB_VERSION == llvm ]] && [[ $COMPILER == clang* ]]; then
         BUILD_COMMAND=time-build-libcxx
+        PREBUILD_COMMAND=prebuild-libcxx
     else
         BUILD_COMMAND=time-build
+        PREBUILD_COMMAND=prebuild
     fi
-    docker run --rm $ANNOTATE -v $INFILE:/home/builder/$FILE_NAME $MEMORY_LIMITS --cidfile=$CIDFILE -v $TARG_OUTFILE:/home/builder/bench.out -t fredtingaud/quick-bench:$COMPILER /bin/bash -c "./$BUILD_COMMAND $FILE_NAME $OPTIM $VERSION"
+
+    if [ $RECORD_PP = true ]; then
+        touch $PP
+        chmod 666 $PP
+        PREBUILD_V="-v $TARG_PP:/home/builder/bench.i"
+    fi
+    if [ "$RECORD_ASM" != "none" ]; then
+        touch $ASM
+        chmod 666 $ASM
+        PREBUILD_V="$PREBUILD_V -v $TARG_ASM:/home/builder/bench.s"
+    fi
+
+    PREBUILD_PARAMS="$RECORD_PP $RECORD_ASM"
+    docker run --rm $ANNOTATE -v $INFILE:/home/builder/$FILE_NAME $MEMORY_LIMITS \
+                              --cidfile=$CIDFILE \
+                              -v $TARG_OUTFILE:/home/builder/bench.out \
+                              -v $TARG_INCLUDES:/home/builder/bench.inc \
+                               $PREBUILD_V \
+               fredtingaud/quick-bench:$COMPILER /bin/bash -c "./$PREBUILD_COMMAND $FILE_NAME $PREBUILD_PARAMS $OPTIM $VERSION && ./$BUILD_COMMAND $FILE_NAME $OPTIM $VERSION"
     rm $CIDFILE
 fi
 
