@@ -156,7 +156,7 @@ async function benchmark(request, header) {
 
 async function reloadOne(id, name) {
     const fileName = filename(id);
-    const values = await Promise.all([read(fileName + '.cpp'), read(fileName + '.opt'), read(fileName + '.build'), read(fileName + '.inc'), read(fileName + 'i', true), read(fileName + 's', true)]);
+    const values = await Promise.all([read(fileName + '.cpp'), read(fileName + '.opt'), read(fileName + '.build'), read(fileName + '.inc'), read(fileName + '.i', true), read(fileName + '.s', true)]);
     return groupResults(values, id, name);
 }
 
