@@ -186,10 +186,6 @@ function readBuildResults(values) {
             outputs.push(s[4]);
             pagefaults.push({ major: s[5], minor: s[6] });
         }
-        else {
-            console.error(`unexpected number of values in ${results[i]}`);
-        }
-
     }
     return {
         times: times,
