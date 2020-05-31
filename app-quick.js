@@ -10,6 +10,8 @@ var exec = require('child_process').exec;
 var sha1 = require('sha1');
 var bodyParser = require('body-parser');
 var multer = require('multer');
+const tools = require('./tools');
+const PORT = process.env.BB_PORT | 4000;
 
 var upload = multer();
 
@@ -44,33 +46,6 @@ BENCHMARK_MAIN();`;
 app.use(bodyParser.json());
 app.use(cors());
 
-function write(fileName, code) {
-    return new Promise((resolve, reject) => {
-        fs.writeFile(fileName, code, (err) => {
-            if (err) {
-                reject(err);
-            } else {
-                resolve();
-            }
-        });
-    });
-}
-
-function read(fileName, acceptMissing) {
-    return new Promise((resolve, reject) => {
-        fs.readFile(fileName, 'utf8', (err, data) => {
-            if (err) {
-                if (acceptMissing && err.code === 'ENOENT') {
-                    resolve(null);
-                } else {
-                    reject(err);
-                }
-            } else {
-                resolve(data);
-            }
-        });
-    });
-}
 
 function runDockerCommand(fileName, request) {
     return './run-docker ' + fileName + ' ' + request.compiler + ' ' + request.optim + ' ' + request.cppVersion + ' ' + (request.isAnnotated || false) + ' ' + (request.force || false) + ' ' + (request.lib || 'gnu');
@@ -107,7 +82,7 @@ function execute(fileName, request) {
                 resolve({
                     res: fs.readFileSync(fileName + '.out'),
                     stdout: stderr,
-                    id: encodeName(makeName(request)),
+                    id: tools.encodeName(makeName(request)),
                     annotation: request.isAnnotated ? fs.readFileSync(fileName + '.perf', 'utf8') : null
                 });
             }
@@ -116,13 +91,11 @@ function execute(fileName, request) {
 }
 
 function groupResults(results) {
-    return new Promise((resolve, reject) => {
-        let code = unwrapCode(results[0]);
-        let options = results[1];
-        let graph = results[2];
-        let annotation = results[3];
-        resolve({ code: code, options: JSON.parse(options), graph: JSON.parse(graph), annotation: annotation });
-    });
+    let code = unwrapCode(results[0]);
+    let options = results[1];
+    let graph = results[2];
+    let annotation = results[3];
+    return { code: code, options: JSON.parse(options), graph: JSON.parse(graph), annotation: annotation };
 }
 
 function makeName(request) {
@@ -156,47 +129,40 @@ function unwrapCode(inputCode) {
     return inputCode;
 }
 
-function encodeName(id) {
-    let short = new Buffer(id, 'hex').toString('base64');
-    short = short.replace(new RegExp('/', 'g'), '-').replace(new RegExp('\\+', 'g'), '_');
-    return short.slice(0, -1);
-}
-
-function decodeName(short) {
-    short = short.replace(new RegExp('\\-', 'g'), '/').replace(new RegExp('_', 'g'), '+ ') + '=';
-    return new Buffer(short, 'base64').toString('hex');
-}
-
 function getFunctions(code) {
     RE = /BENCHMARK\s*\(\s*([A-Za-z0-9_]+)\s*\)/g;
-    let content='';
+    let content = '';
     let res;
     while ((res = RE.exec(code)) !== null) {
-        content+= res[1] + '\n';
+        content += res[1] + '\n';
     }
     return content;
 }
 
-function benchmark(request, header) {
-    if (request.code.length > MAX_CODE_LENGTH) {
-        return Promise.reject('\u001b[0m\u001b[0;1;31mError: Unauthorized code length.\u001b[0m\u001b[1m');
+async function benchmark(request, header) {
+    try {
+        if (request.code.length > MAX_CODE_LENGTH) {
+            return Promise.reject('\u001b[0m\u001b[0;1;31mError: Unauthorized code length.\u001b[0m\u001b[1m');
+        }
+        let name = makeName(request);
+        console.log('Bench ' + name + ' ' + JSON.stringify(header) + ' < ' + optionsToString(request));
+        var dir = WRITE_PATH + '/' + name.substr(0, 2);
+        var fileName = dir + '/' + name;
+        await tools.write(fileName + '.cpp', wrapCode(request.code));
+        await tools.write(fileName + '.func', getFunctions(request.code));
+        await tools.write(fileName + '.opt', optionsToString(request));
+        return await execute(fileName, request);
+    } catch (e) {
+        return { stdout: e };
     }
-    let name = makeName(request);
-    console.log('Bench ' + name + ' ' + JSON.stringify(header) + ' < ' + optionsToString(request));
-    var dir = WRITE_PATH + '/' + name.substr(0, 2);
-    var fileName = dir + '/' + name;
-    return Promise.resolve(write(fileName + '.cpp', wrapCode(request.code)))
-        .then(() => write(fileName + '.func', getFunctions(request.code)))
-        .then(() => write(fileName + '.opt', optionsToString(request)))
-        .then(() => execute(fileName, request));
 }
 
-function reload(encodedName) {
-    let name = decodeName(encodedName);
+async function reload(encodedName) {
+    let name = tools.decodeName(encodedName);
     var dir = WRITE_PATH + '/' + name.substr(0, 2);
     var fileName = dir + '/' + name;
-    return Promise.all([read(fileName + '.cpp'), read(fileName + '.opt'), read(fileName + '.out'), read(fileName + '.perf', true)])
-        .then((values) => groupResults(values));
+    let values = await Promise.all([tools.read(fileName + '.cpp'), tools.read(fileName + '.opt'), tools.read(fileName + '.out'), tools.read(fileName + '.perf', true)])
+    return groupResults(values);
 }
 
 function makeGraphResult(values, message, id, annotation) {
@@ -211,8 +177,8 @@ function makeGraphResult(values, message, id, annotation) {
     return { result: result, message: message, id: id, annotation: annotation };
 }
 
-function makeWholeResult(done) {
-    let result = {
+function makeRequest(done) {
+    return {
         code: done.code,
         compiler: done.options.compiler,
         optim: done.options.optim,
@@ -221,30 +187,38 @@ function makeWholeResult(done) {
         lib: done.options.lib,
         protocolVersion: done.options.protocolVersion
     };
+}
+function getRequestAndResult(done) {
 
-    return Object.assign(result, makeGraphResult(done.graph, '', encodeName(makeName(result)), done.annotation));
+    return Object.assign({ tab: makeRequest(done) }, makeGraphResult(done.graph, '', tools.encodeName(makeName(request)), done.annotation));
 }
 
-app.post('/', upload.array(), function (req, res) {
+app.post('/quick', upload.array(), function (req, res) {
     Promise.resolve(benchmark(req.body, req.headers))
         .then((done) => res.json(makeGraphResult(JSON.parse(done.res), done.stdout, done.id, done.annotation)))
         .catch((err) => res.json({ message: err }));
 });
 
-app.get('/get/:id', upload.array(), function (req, res) {
+app.get('/quick/:id', upload.array(), function (req, res) {
     console.log('Get ' + req.params.id + ' ' + JSON.stringify(req.headers));
     Promise.resolve(reload(req.params.id))
-        .then((done) => res.json(makeWholeResult(done)))
+        .then((done) => res.json(getRequestAndResult(done)))
         .catch(() => res.json({ message: 'Could not load given id' }));
 });
 
-app.listen(3000, function () {
-    console.log('Listening to commands');
+app.get('/:id', upload.array(), function (req, res) {
+    res.redirect(`/q/${req.params.id}`);
+});
+
+app.get('/q/:id', upload.array(), function (req, res) {
+    res.sendFile(path.join(__dirname, 'quick-bench-front-end', 'quick-bench', 'build', 'index.html'));
+});
+
+app.listen(PORT, function () {
+    console.log(`Listening to commands on port ${PORT}`);
 });
 
 exports.makeName = makeName;
-exports.encodeName = encodeName;
-exports.decodeName = decodeName;
 exports.wrapCode = wrapCode;
 exports.unwrapCode = unwrapCode;
 exports.groupResults = groupResults;

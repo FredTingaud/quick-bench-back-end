@@ -1,4 +1,4 @@
-﻿const app = require('../app');
+﻿const tools = require('../tools');
 const sha1 = require('sha1');
 
 var assert = require('assert');
@@ -12,30 +12,30 @@ const twoPlusesId = '85b9268e1fb4b9240aad8950faa3632e980312da';
 
 describe('default codes', function () {
     it('should return a stable encoding', function () {
-        assert.equal(app.encodeName(refId), refUrl);
+        assert.equal(tools.encodeName(refId), refUrl);
     });
     it('should return a stable decoding', function () {
-        assert.equal(app.decodeName(refUrl), refId);
+        assert.equal(tools.decodeName(refUrl), refId);
     });
 })
 
 describe('bijective', function () {
     it('should be bijective', function () {
         const name = sha1('Hello World!');
-        assert.equal(app.decodeName(app.encodeName(name)), name);
+        assert.equal(tools.decodeName(tools.encodeName(name)), name);
     });
 })
 
 describe('URL safe', function () {
     it('should give URL safe names', function () {
-        [...Array(10).keys()].map((val) => app.encodeName(sha1(val))).forEach((val) => assert.equal(val, encodeURIComponent(val)));
+        [...Array(10).keys()].map((val) => tools.encodeName(sha1(val))).forEach((val) => assert.equal(val, encodeURIComponent(val)));
     });
     it('should escape multiple slashes', function () {
-        assert.equal(app.decodeName(twoSlashes), twoSlashedId);
-        assert.equal(app.encodeName(twoSlashedId), twoSlashes);
+        assert.equal(tools.decodeName(twoSlashes), twoSlashedId);
+        assert.equal(tools.encodeName(twoSlashedId), twoSlashes);
     })
     it('should escape multiple plusses', function () {
-        assert.equal(app.decodeName(twoPluses), twoPlusesId);
-        assert.equal(app.encodeName(twoPlusesId), twoPluses);
+        assert.equal(tools.decodeName(twoPluses), twoPlusesId);
+        assert.equal(tools.encodeName(twoPlusesId), twoPluses);
     })
 })

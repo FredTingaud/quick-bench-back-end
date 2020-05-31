@@ -10,6 +10,7 @@ var exec = require('child_process').exec;
 var sha1 = require('sha1');
 var bodyParser = require('body-parser');
 var multer = require('multer');
+const tools = require('./tools');
 const PORT = process.env.BB_PORT | 4000;
 
 var upload = multer();
@@ -20,33 +21,6 @@ const WRITE_PATH = '/data';
 app.use(bodyParser.json());
 app.use(cors());
 
-function write(fileName, code) {
-    return new Promise((resolve, reject) => {
-        fs.writeFile(fileName, code, (err) => {
-            if (err) {
-                reject(err);
-            } else {
-                resolve();
-            }
-        });
-    });
-}
-
-function read(fileName, acceptMissing) {
-    return new Promise((resolve, reject) => {
-        fs.readFile(fileName, 'utf8', (err, data) => {
-            if (err) {
-                if (acceptMissing && err.code === 'ENOENT') {
-                    resolve(null);
-                } else {
-                    reject(err);
-                }
-            } else {
-                resolve(data);
-            }
-        });
-    });
-}
 
 function cleanFilename(text) {
     if (text === '')
@@ -93,7 +67,7 @@ function execute(fileName, request, protocolVersion, force) {
                     asm: request.asm && request.asm.length > 0 ? fs.readFileSync(fileName + '.s') : null,
                     preprocessed: request.withPP ? fs.readFileSync(fileName + '.i') : null,
                     stdout: stderr,
-                    id: encodeName(makeCodeName(request, protocolVersion)),
+                    id: tools.encodeName(makeCodeName(request, protocolVersion)),
                     title: request.title
                 });
             }
@@ -118,17 +92,6 @@ function makeName(request) {
     return sha1(request.tabs.reduce(u, curr => u + makeCodeName(curr, request.protocolVersion)) + request.protocolVersion);
 }
 
-function encodeName(id) {
-    let short = new Buffer(id, 'hex').toString('base64');
-    short = short.replace(new RegExp('/', 'g'), '-').replace(new RegExp('\\+', 'g'), '_');
-    return short.slice(0, -1);
-}
-
-function decodeName(short) {
-    short = short.replace(new RegExp('\\-', 'g'), '/').replace(new RegExp('_', 'g'), '+ ') + '=';
-    return new Buffer(short, 'base64').toString('hex');
-}
-
 function filename(name) {
     let dir = WRITE_PATH + '/' + name.substr(0, 2);
     return dir + '/' + name;
@@ -142,8 +105,8 @@ async function benchmarkOneBuild(tab, protocolVersion, force) {
         let name = makeCodeName(tab, protocolVersion);
         console.log('Bench ' + name + ' < ' + optionsToString(tab, protocolVersion));
         let fileName = filename(name);
-        await write(fileName + '.cpp', tab.code);
-        await write(fileName + '.opt', optionsToString(tab, protocolVersion));
+        await tools.write(fileName + '.cpp', tab.code);
+        await tools.write(fileName + '.opt', optionsToString(tab, protocolVersion));
         return await execute(fileName, tab, protocolVersion, force);
     } catch (e) {
         return { stdout: e };
@@ -156,16 +119,16 @@ async function benchmark(request, header) {
 
 async function reloadOne(id, name) {
     const fileName = filename(id);
-    const values = await Promise.all([read(fileName + '.cpp'), read(fileName + '.opt'), read(fileName + '.build'), read(fileName + '.inc'), read(fileName + '.i', true), read(fileName + '.s', true)]);
+    const values = await Promise.all([tools.read(fileName + '.cpp'), tools.read(fileName + '.opt'), tools.read(fileName + '.build'), tools.read(fileName + '.inc'), tools.read(fileName + '.i', true), tools.read(fileName + '.s', true)]);
     return groupResults(values, id, name);
 }
 
 async function reload(encodedName) {
-    let fileName = filename(decodeName(encodedName));
-    const ids = await read(fileName + '.res');
+    let fileName = filename(tools.decodeName(encodedName));
+    const ids = await tools.read(fileName + '.res');
     return await Promise.all(ids.split("\n").map(s => {
         const info = s.split("\t");
-        return reloadOne(decodeName(info[0]), info[1]);
+        return reloadOne(tools.decodeName(info[0]), info[1]);
     }));
 }
 
@@ -204,14 +167,14 @@ function makeBuildGraphResult(values) {
     let preprocessed = values.map(v => v.preprocessed);
     let idsList = values.map(v => `${v.id}\t${v.title}`).reduce((r, v) => r + '\n' + v);
     let id = sha1(idsList);
-    write(filename(id) + '.res', idsList);
+    tools.write(filename(id) + '.res', idsList);
     return {
         result: result,
         messages: messages,
         includes: includes,
         asm: asm,
         preprocessed: preprocessed,
-        id: encodeName(id)
+        id: tools.encodeName(id)
     };
 }
 
@@ -227,7 +190,7 @@ function makeOneRequest(done) {
     };
 }
 
-function makeRequestAndReply(done) {
+function getRequestAndResult(done) {
     return Object.assign({ tabs: done.map(d => makeOneRequest(d)) }, makeBuildGraphResult(done.map(d => {
         return {
             res: d.graph,
@@ -235,7 +198,7 @@ function makeRequestAndReply(done) {
             includes: d.includes,
             asm: d.asm,
             preprocessed: d.preprocessed,
-            id: encodeName(d.id)
+            id: tools.encodeName(d.id)
         };
     })));
 }
@@ -249,7 +212,7 @@ app.post('/build', upload.array(), function (req, res) {
 app.get('/build/:id', upload.array(), function (req, res) {
     console.log('Get ' + req.params.id + ' ' + JSON.stringify(req.headers));
     Promise.resolve(reload(req.params.id))
-        .then((done) => res.json(makeRequestAndReply(done)))
+        .then((done) => res.json(getRequestAndResult(done)))
         .catch(() => res.json({ messages: [`Could not load ${req.params.id}`] }));
 });
 
@@ -266,8 +229,6 @@ app.listen(PORT, function () {
 });
 
 exports.makeName = makeName;
-exports.encodeName = encodeName;
-exports.decodeName = decodeName;
 exports.groupResults = groupResults;
 exports.optionsToString = optionsToString;
 exports.execute = execute;
