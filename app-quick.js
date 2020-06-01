@@ -48,17 +48,17 @@ app.use(cors());
 
 
 function runDockerCommand(fileName, request) {
-    return './run-docker ' + fileName + ' ' + request.compiler + ' ' + request.optim + ' ' + request.cppVersion + ' ' + (request.isAnnotated || false) + ' ' + (request.force || false) + ' ' + (request.lib || 'gnu');
+    return './run-docker ' + fileName + ' ' + request.options.compiler + ' ' + request.options.optim + ' ' + request.options.cppVersion + ' ' + (request.isAnnotated || false) + ' ' + (request.force || false) + ' ' + (request.options.lib || 'gnu');
 }
 
 function optionsToString(request) {
     let options = {
         "protocolVersion": request.protocolVersion,
-        "compiler": request.compiler,
-        "optim": request.optim,
-        "cppVersion": request.cppVersion,
+        "compiler": request.options.compiler,
+        "optim": request.options.optim,
+        "cppVersion": request.options.cppVersion,
         "isAnnotated": request.isAnnotated,
-        "lib": request.lib
+        "lib": request.options.lib
     };
     return JSON.stringify(options);
 }
@@ -189,8 +189,8 @@ function makeRequest(done) {
     };
 }
 function getRequestAndResult(done) {
-
-    return Object.assign({ tab: makeRequest(done) }, makeGraphResult(done.graph, '', tools.encodeName(makeName(request)), done.annotation));
+    const request = makeRequest(done);
+    return Object.assign({ tab: request }, makeGraphResult(done.graph, '', tools.encodeName(makeName(request)), done.annotation));
 }
 
 app.post('/quick', upload.array(), function (req, res) {

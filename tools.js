@@ -1,3 +1,4 @@
+var fs = require('fs');
 
 function write(fileName, code) {
     return new Promise((resolve, reject) => {
