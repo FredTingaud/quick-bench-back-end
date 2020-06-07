@@ -166,14 +166,17 @@ async function reload(encodedName) {
 }
 
 function makeGraphResult(values, message, id, annotation) {
-    let result = { context: values.context };
-    let noopTime = values.benchmarks[values.benchmarks.length - 1].cpu_time;
-    result.benchmarks = values.benchmarks.map(obj => {
-        return {
-            name: obj.name,
-            cpu_time: obj.cpu_time / noopTime
-        };
-    });
+    let result = {};
+    if (values) {
+        result = { context: values.context };
+        const noopTime = values.benchmarks[values.benchmarks.length - 1].cpu_time;
+        result.benchmarks = values.benchmarks.map(obj => {
+            return {
+                name: obj.name,
+                cpu_time: obj.cpu_time / noopTime
+            };
+        });
+    }
     return { result: result, message: message, id: id, annotation: annotation };
 }
 
@@ -195,7 +198,7 @@ function getRequestAndResult(done) {
 
 app.post('/quick', upload.array(), function (req, res) {
     Promise.resolve(benchmark(req.body, req.headers))
-        .then((done) => res.json(makeGraphResult(JSON.parse(done.res), done.stdout, done.id, done.annotation)))
+        .then((done) => res.json(makeGraphResult(done.res ? JSON.parse(done.res) : null, done.stdout, done.id, done.annotation)))
         .catch((err) => res.json({ message: err }));
 });
 
