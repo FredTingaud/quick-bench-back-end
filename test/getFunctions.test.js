@@ -1,4 +1,4 @@
-﻿const app = require('../app-quick');
+﻿const libquick = require('../src/libquick');
 
 var assert = require('assert');
 
@@ -35,12 +35,12 @@ BENCHMARK   (E);
 
 describe('Find functions', function () {
     it('should find simple functions', function () {
-        assert.equal(app.getFunctions(startCode), 'BM_StringCreation\nBM_StringCopy\n');
+        assert.equal(libquick.getFunctions(startCode), 'BM_StringCreation\nBM_StringCopy\n');
     });
     it('should find repeated benchmarks', function () {
-        assert.equal(app.getFunctions(repeatCode), 'CopyStrings\n');
+        assert.equal(libquick.getFunctions(repeatCode), 'CopyStrings\n');
     });
     it('should support spaces arround name', function () {
-        assert.equal(app.getFunctions(spacesCode), 'A\nB\nC\nE\n');
+        assert.equal(libquick.getFunctions(spacesCode), 'A\nB\nC\nE\n');
     });
 })

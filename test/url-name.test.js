@@ -1,4 +1,4 @@
-﻿const tools = require('../tools');
+﻿const tools = require('../src/tools');
 const sha1 = require('sha1');
 
 var assert = require('assert');

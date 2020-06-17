@@ -1,4 +1,4 @@
-﻿const app = require('../app-quick');
+﻿const libquick = require('../src/libquick');
 
 var assert = require('assert');
 
@@ -114,6 +114,6 @@ BENCHMARK(BM_StringCopy);
 
 describe('group', function () {
     it('should return a stable message with protocol 1', function () {
-        return assert.deepEqual(app.groupResults([INPUT, OPTIONS, OUTPUT]), EXPECTED);
+        return assert.deepEqual(libquick.groupResults([INPUT, OPTIONS, OUTPUT]), EXPECTED);
     });
 });

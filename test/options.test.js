@@ -1,4 +1,4 @@
-﻿const app = require('../app-quick');
+﻿const libquick = require('../src/libquick');
 
 var assert = require('assert');
 
@@ -17,14 +17,25 @@ static void BM_StringCopy(benchmark::State& state) {
 BENCHMARK(BM_StringCopy);
 `;
 
-const request = { code: startCode, compiler: 'clang-5.0', optim: 3, cppVersion: 17, isAnnotated: true, lib: 'llvm', protocolVersion: 3 };
+const request = {
+    code: startCode,
+    options: {
+        compiler: 'clang-5.0',
+        optim: 3,
+        cppVersion: 17,
+        lib: 'llvm'
+    },
+    isAnnotated: true,
+    protocolVersion: 4
+};
 
 describe('Save options', function () {
-    const firstName = app.makeName(request);
-    const saved = app.optionsToString(request);
+    const firstName = libquick.makeName(request);
+    const saved = libquick.optionsToString(request);
+    console.log("saved: " + saved);
     const loaded = JSON.parse(saved);
     loaded.code = startCode;
     it('should save enough to reload the request', function () {
-        assert.equal(app.makeName(loaded), firstName);
+        assert.equal(libquick.makeName(loaded), firstName);
     });
 })

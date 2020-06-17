@@ -1,12 +1,16 @@
-const appbuild = require('../app-build');
+const libbuild = require('../src/libbuild');
 const expect = require('chai').expect;
+const fs = require('fs');
 
 const version = process.env.QB_VERSION;
 
 describe('run build-bench', function () {
     before(function () {
-        const execSync = require('child_process').execSync;
-        execSync(`rm -rf ${process.cwd()}/system-test/testfile/test/test.lock`);
+        try {
+            fs.unlinkSync('./system-test/testfile/test/test.lock');
+        } catch (ignore) {
+            //ignore
+        }
     });
 
     it('should have build results', async () => {
@@ -21,7 +25,7 @@ describe('run build-bench', function () {
         };
         expect(version).to.be.ok;
         process.env.BENCH_ROOT = process.cwd();
-        const done = await appbuild.execute('system-test/build/test', request, 3, true);
+        const done = await libbuild.execute('system-test/build/test', request, 3, true);
         // Time results are rows of 7 elements separated by tabs
         expect(done.res.split('\n')).to.have.lengthOf.above(1);
         expect(done.res.split('\n')[0].split('\t')).to.have.length(7);

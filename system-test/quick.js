@@ -1,12 +1,16 @@
-const appquick = require('../app-quick');
+const libquick = require('../src/libquick');
 const expect = require('chai').expect;
+const fs = require('fs');
 
 const version = process.env.QB_VERSION;
 
 describe('run docker with version', function () {
     before(function () {
-        const execSync = require('child_process').execSync;
-        execSync(`rm -rf ${process.cwd()}/system-test/testfile/test/test.lock`);
+        try {
+            fs.unlinkSync('./system-test/testfile/test/test.lock');
+        } catch (ignore) {
+            //ignore
+        }
     });
 
     it('should have benchmark results', async () => {
@@ -22,7 +26,7 @@ describe('run docker with version', function () {
         };
         expect(version).to.be.ok;
         process.env.BENCH_ROOT = process.cwd();
-        const done = await appquick.execute('system-test/testfile/test', request);
+        const done = await libquick.execute('system-test/quick/test', request);
         const parsed = JSON.parse(done.res);
         expect(parsed.benchmarks).to.have.length(2);
         expect(done.annotation).to.be.ok;

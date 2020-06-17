@@ -2,7 +2,7 @@
 
 var assert = require('assert');
 
-const OPTIONS = '{"protocolVersion":3,"compiler":"clang++-3.8","optim":"1","cppVersion":"17","annotation":true,"lib":"llvm"}';
+const OPTIONS = '{"protocolVersion":4, "options":{"compiler":"clang++-9.0","optim":"3","cppVersion":"17","lib":"llvm"},"annotation":true}';
 const OUTPUT = `{
   "context": {
     "date": "2017-06-03 16:27:30",
@@ -105,18 +105,20 @@ BENCHMARK(BM_StringCopy);
         }
     },
     options: {
-        compiler: "clang++-3.8",
-        cppVersion: "17",
-        optim: "1",
+        options: {
+            compiler: "clang++-9.0",
+            cppVersion: "17",
+            optim: "3",
+            lib: "llvm"
+        },
         annotation: true,
-        lib: "llvm",
-        protocolVersion: 3
+        protocolVersion: 4
     },
     annotation: "Some annotations."
 };
 
 describe('group', function () {
-    it('should return a stable message with protocol 3', function () {
+    it('should return a stable message with protocol 4', function () {
         return assert.deepEqual(libquick.groupResults([INPUT, OPTIONS, OUTPUT, ANNOTATION]), EXPECTED);
     });
 });

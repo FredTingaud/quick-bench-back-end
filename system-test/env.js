@@ -9,8 +9,7 @@ describe('check compiler version inside docker', function () {
             timeout: 60000,
             killSignal: 'SIGKILL'
         };
-        console.log(`${__dirname}/env/version.cpp`);
-        const result = await new Promise(resolve => exec(`docker run --rm -v ${__dirname}/testfile/version.cpp:/home/builder/bench-file.cpp -t fredtingaud/quick-bench:${version} /bin/bash -c "./build && ./run"`, options, (error, stdout, stderr) => {
+        const result = await new Promise(resolve => exec(`docker run --rm -v ${__dirname}/env/version.cpp:/home/builder/bench-file.cpp -t fredtingaud/quick-bench:${version} /bin/bash -c "./build && ./run"`, options, (error, stdout, stderr) => {
             resolve(stdout + stderr);
         }));
         expect(result).to.eql(version);

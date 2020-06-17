@@ -1,4 +1,4 @@
-﻿const app = require('../app-quick');
+﻿const libquick = require('../src/libquick');
 
 var assert = require('assert');
 
@@ -85,15 +85,15 @@ BENCHMARK_MAIN();`;
 
 describe('symetrical', function () {
     it('should return initial value when wrapping then unwrapping', function () {
-        assert.equal(app.unwrapCode(app.wrapCode(startCode)), startCode);
+        assert.equal(libquick.unwrapCode(libquick.wrapCode(startCode)), startCode);
     });
     it('should return initial value when unwrapping a v1 code', function () {
-        assert.equal(app.unwrapCode(code1), startCode);
+        assert.equal(libquick.unwrapCode(code1), startCode);
     });
     it('should return initial value when unwrapping a v2 code', function () {
-        assert.equal(app.unwrapCode(code2), startCode);
+        assert.equal(libquick.unwrapCode(code2), startCode);
     });
     it('should return initial value when unwrapping a v3 code', function () {
-        assert.equal(app.unwrapCode(code3), startCode);
+        assert.equal(libquick.unwrapCode(code3), startCode);
     });
 })

@@ -1,4 +1,4 @@
-﻿const app = require('../app-time');
+﻿const app = require('../src/libbuild');
 
 var assert = require('assert');
 
