@@ -62,10 +62,10 @@ function execute(fileName, request, protocolVersion, force) {
                 console.timeEnd(fileName);
                 console.log('Bench done ' + fileName + (stderr.indexOf('cached results') > -1 ? ' from cache' : ''));
                 resolve({
-                    res: fs.readFileSync(fileName + '.build'),
-                    includes: fs.readFileSync(fileName + '.inc'),
-                    asm: request.asm && request.asm.length > 0 ? fs.readFileSync(fileName + '.s') : null,
-                    preprocessed: request.withPP ? fs.readFileSync(fileName + '.i') : null,
+                    res: fs.readFileSync(fileName + '.build','utf8'),
+                    includes: fs.readFileSync(fileName + '.inc', 'utf8'),
+                    asm: request.asm && request.asm.length > 0 ? fs.readFileSync(fileName + '.s', 'utf8') : null,
+                    preprocessed: request.withPP ? fs.readFileSync(fileName + '.i', 'utf8') : null,
                     stdout: stderr,
                     id: tools.encodeName(makeCodeName(request, protocolVersion)),
                     title: request.title
@@ -134,7 +134,7 @@ async function reload(encodedName) {
 
 function readBuildResults(values) {
     if (!values.res) return {};
-    let results = values.res.toString().split('\n');
+    let results = values.res.split('\n');
     let times = [];
     let memories = [];
     let inputs = [];
