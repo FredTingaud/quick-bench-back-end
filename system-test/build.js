@@ -4,13 +4,17 @@ const fs = require('fs');
 
 const version = process.env.QB_VERSION;
 
+function removeIfExists(path) {
+    try {
+        fs.unlinkSync(path);
+    } catch (ignore) {
+        //ignore
+    }
+}
+
 describe('run build-bench', function () {
     before(function () {
-        try {
-            fs.unlinkSync('./system-test/testfile/test/test.lock');
-        } catch (ignore) {
-            //ignore
-        }
+        removeIfExists('./system-test/build/test.lock');
     });
 
     it('should have build results', async () => {
@@ -44,4 +48,11 @@ describe('run build-bench', function () {
 
         expect(done.title).to.equal('cstdio');
     }).timeout(120000);
+
+    after(function () {
+        removeIfExists('./system-test/build/test.build');
+        removeIfExists('./system-test/build/test.i');
+        removeIfExists('./system-test/build/test.inc');
+        removeIfExists('./system-test/build/test.s');
+    });
 });

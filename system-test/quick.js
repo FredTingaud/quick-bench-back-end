@@ -4,13 +4,17 @@ const fs = require('fs');
 
 const version = process.env.QB_VERSION;
 
+function removeIfExists(path) {
+    try {
+        fs.unlinkSync(path);
+    } catch (ignore) {
+        //ignore
+    }
+}
+
 describe('run docker with version', function () {
     before(function () {
-        try {
-            fs.unlinkSync('./system-test/testfile/test/test.lock');
-        } catch (ignore) {
-            //ignore
-        }
+        removeIfExists('./system-test/quick/test.lock');
     });
 
     it('should have benchmark results', async () => {
@@ -37,4 +41,9 @@ describe('run docker with version', function () {
         console.log(done.stdout);
         expect(done.annotation).to.be.ok;
     }).timeout(120000);
+
+    after(function () {
+        removeIfExists('./system-test/quick/test.out');
+        removeIfExists('./system-test/quick/test.perf');
+    });
 });
