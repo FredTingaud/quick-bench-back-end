@@ -4,19 +4,24 @@ const expect = require('chai').expect;
 const version = process.env.QB_VERSION;
 
 describe('run docker with version', function () {
+    before(function () {
+        const execSync = require('child_process').execSync;
+        execSync(`rm -rf ${process.cwd()}/system-test/testfile/test/test.lock`);
+    });
+
     it('should have benchmark results', async () => {
         var request = {
             options: {
                 compiler: version,
                 optim: 3,
                 cppVersion: 17,
-                isAnnotated: "true",
                 lib: "gnu"
             },
+            isAnnotated: "true",
             force: "true"
         };
         expect(version).to.be.ok;
-        process.env.BENCH_ROOT = __dirname;
+        process.env.BENCH_ROOT = process.cwd();
         const done = await app.execute('system-test/testfile/test', request);
         const parsed = JSON.parse(done.res);
         expect(parsed.benchmarks).to.have.length(2);
