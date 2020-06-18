@@ -4,7 +4,7 @@ var express = require('express');
 var cors = require('cors');
 const path = require('path');
 var app = express();
-app.use(express.static(path.join(__dirname, 'quick-bench-front-end', 'build-bench', 'build')));
+app.use(express.static(path.join(__dirname, 'quick-bench-front-end', 'quick-bench', 'build')));
 var bodyParser = require('body-parser');
 var multer = require('multer');
 var libquick = require('./src/libquick');
