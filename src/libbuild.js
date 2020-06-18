@@ -195,5 +195,6 @@ exports.optionsToString = optionsToString;
 exports.execute = execute;
 exports.cleanFilename = cleanFilename;
 exports.makeBuildGraphResult = makeBuildGraphResult;
+exports.benchmark = benchmark;
 exports.reload = reload;
 exports.getRequestAndResult = getRequestAndResult;

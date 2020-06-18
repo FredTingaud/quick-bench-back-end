@@ -192,6 +192,7 @@ exports.groupResults = groupResults;
 exports.getFunctions = getFunctions;
 exports.optionsToString = optionsToString;
 exports.execute = execute;
+exports.benchmark = benchmark;
 exports.makeGraphResult = makeGraphResult;
 exports.reload = reload;
 exports.getRequestAndResult = getRequestAndResult;
