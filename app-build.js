@@ -7,7 +7,7 @@ var app = express();
 app.use(express.static(path.join(__dirname, 'quick-bench-front-end', 'build-bench', 'build')));
 var bodyParser = require('body-parser');
 var multer = require('multer');
-const libbuild = require('src/libbuild');
+const libbuild = require('./src/libbuild');
 
 const PORT = process.env.BB_PORT | 4000;
 
