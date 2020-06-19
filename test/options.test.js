@@ -32,10 +32,12 @@ const request = {
 describe('Save options', function () {
     const firstName = libquick.makeName(request);
     const saved = libquick.optionsToString(request);
-    console.log("saved: " + saved);
-    const loaded = JSON.parse(saved);
+    let loaded = {};
+    loaded.options = JSON.parse(saved);
     loaded.code = startCode;
+    const built = libquick.makeRequest(loaded);
+
     it('should save enough to reload the request', function () {
-        assert.equal(libquick.makeName(loaded), firstName);
+        assert.equal(libquick.makeName(built), firstName);
     });
-})
+});

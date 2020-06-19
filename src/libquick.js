@@ -40,12 +40,10 @@ function optionsToString(request) {
     let options = {
         protocolVersion: request.protocolVersion,
         isAnnotated: request.isAnnotated,
-        options: {
-            compiler: request.options.compiler,
-            optim: request.options.optim,
-            cppVersion: request.options.cppVersion,
-            lib: request.options.lib
-        }
+        compiler: request.options.compiler,
+        optim: request.options.optim,
+        cppVersion: request.options.cppVersion,
+        lib: request.options.lib
     };
     return JSON.stringify(options);
 }
@@ -77,12 +75,16 @@ function execute(fileName, request) {
     });
 }
 
+function parseOptions(options) {
+    return JSON.parse(options);
+}
+
 function groupResults(results) {
     let code = unwrapCode(results[0]);
     let options = results[1];
     let graph = results[2];
     let annotation = results[3];
-    return { code: code, options: JSON.parse(options), graph: JSON.parse(graph), annotation: annotation };
+    return { code: code, options: parseOptions(options), graph: JSON.parse(graph), annotation: annotation };
 }
 
 function makeName(request) {
@@ -172,11 +174,13 @@ function makeGraphResult(values, message, id, annotation) {
 function makeRequest(done) {
     return {
         code: done.code,
-        compiler: done.options.compiler,
-        optim: done.options.optim,
-        cppVersion: done.options.cppVersion,
+        options: {
+            compiler: done.options.compiler,
+            optim: done.options.optim,
+            cppVersion: done.options.cppVersion,
+            lib: done.options.lib
+        },
         isAnnotated: done.options.isAnnotated,
-        lib: done.options.lib,
         protocolVersion: done.options.protocolVersion
     };
 }
@@ -195,4 +199,5 @@ exports.execute = execute;
 exports.benchmark = benchmark;
 exports.makeGraphResult = makeGraphResult;
 exports.reload = reload;
+exports.makeRequest = makeRequest;
 exports.getRequestAndResult = getRequestAndResult;
