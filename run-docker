@@ -13,7 +13,7 @@ RECORD_PERF=$5
 CLEAN_CACHE=$6
 LIB_VERSION=$7
 
-if ! [[ $COMPILER == "clang-"?"."? || $COMPILER == "gcc-"?"."? ]] ; then
+if ! [[ $COMPILER == "clang-"?*"."? || $COMPILER == "gcc-"?*"."? ]] ; then
     >&2 echo "Unknown compiler"
     exit 1
 fi
