@@ -33,7 +33,7 @@ function optionsToString(request, protocolVersion) {
 
 function execute(fileName, request, protocolVersion, force) {
     let options = {
-        timeout: 60000,
+        timeout: 70000,
         killSignal: 'SIGKILL'
     };
     return new Promise((resolve, reject) => {
