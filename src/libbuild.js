@@ -3,7 +3,9 @@ var fs = require('fs');
 const tools = require('./tools');
 var sha1 = require('sha1');
 
-const MAX_CODE_LENGTH = 20000;
+const MAX_CODE_LENGTH = process.env.BB_CODE_LIMIT | 20000;
+const TIMEOUT = process.env.BB_TIMEOUT < 0 ? 0 : (process.env.BB_TIMEOUT + 10 | 70);
+
 const WRITE_PATH = '/data';
 
 
@@ -33,7 +35,7 @@ function optionsToString(request, protocolVersion) {
 
 function execute(fileName, request, protocolVersion, force) {
     let options = {
-        timeout: 70000,
+        timeout: TIMEOUT * 1000,
         killSignal: 'SIGKILL'
     };
     return new Promise((resolve, reject) => {
@@ -85,7 +87,7 @@ function filename(name) {
 
 async function benchmarkOneBuild(tab, protocolVersion, force) {
     try {
-        if (tab.code.length > MAX_CODE_LENGTH) {
+        if (MAX_CODE_LENGTH > 0 && tab.code.length > MAX_CODE_LENGTH) {
             return Promise.reject(`\u001b[0m\u001b[0;1;31mError: Unauthorized code length in {$unit.title}.\u001b[0m\u001b[1m`);
         }
         let name = makeCodeName(tab, protocolVersion);

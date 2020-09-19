@@ -88,11 +88,18 @@ else
     fi
 
     PREBUILD_PARAMS="$RECORD_PP $RECORD_ASM"
+    if [ -z ${BB_TIMEOUT+x} ]; then
+        ENV_PARAMS="-e BB_TIMEOUT=$BB_TIMEOUT"
+    fi
+    if [ -z ${BB_MAX_ITERATION+x} ]; then
+        ENV_PARAMS="$ENV_PARAMS -e BB_MAX=$BB_MAX_ITERATION"
+    fi
     docker run --rm $ANNOTATE -v $INFILE:/home/builder/$FILE_NAME $MEMORY_LIMITS \
                               --cidfile=$CIDFILE \
                               -v $TARG_OUTFILE:/home/builder/bench.out \
                               -v $TARG_INCLUDES:/home/builder/bench.inc \
-                               $PREBUILD_V \
+                              $ENV_PARAMS \
+                              $PREBUILD_V \
                fredtingaud/quick-bench:$COMPILER /bin/bash -c "./$PREBUILD_COMMAND $FILE_NAME $PREBUILD_PARAMS $OPTIM $VERSION && ./$BUILD_COMMAND $FILE_NAME $OPTIM $VERSION"
     rm $CIDFILE
 fi
