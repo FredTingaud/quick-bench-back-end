@@ -3,7 +3,8 @@ var sha1 = require('sha1');
 var fs = require('fs');
 const tools = require('./tools');
 
-const MAX_CODE_LENGTH = 20000;
+const MAX_CODE_LENGTH = process.env.QB_CODE_LIMIT | 20000;
+const TIMEOUT = process.env.QB_TIMEOUT < 0 ? 0 : (process.env.QB_TIMEOUT | 60);
 
 const WRITE_PATH = '/data';
 const PREFIX_CODE_1 = `#include <benchmark/benchmark_api.h>
@@ -50,7 +51,7 @@ function optionsToString(request) {
 
 function execute(fileName, request) {
     let options = {
-        timeout: 60000,
+        timeout: TIMEOUT * 1000,
         killSignal: 'SIGKILL'
     };
     return new Promise((resolve, reject) => {
@@ -132,7 +133,7 @@ function getFunctions(code) {
 
 async function benchmark(request, header) {
     try {
-        if (request.code.length > MAX_CODE_LENGTH) {
+        if (MAX_CODE_LENGTH > 0 && request.code.length > MAX_CODE_LENGTH) {
             return Promise.reject('\u001b[0m\u001b[0;1;31mError: Unauthorized code length.\u001b[0m\u001b[1m');
         }
         let name = makeName(request);

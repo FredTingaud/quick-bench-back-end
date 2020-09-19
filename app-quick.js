@@ -9,7 +9,7 @@ var bodyParser = require('body-parser');
 var multer = require('multer');
 var libquick = require('./src/libquick');
 
-const PORT = process.env.BB_PORT | 4000;
+const PORT = process.env.QB_PORT | 4000;
 
 var upload = multer();
 
