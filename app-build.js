@@ -17,6 +17,10 @@ app.use(bodyParser.json());
 app.use(cors());
 
 
+app.get('/build-env', upload.array(), function (req, res) {
+    res.json(libbuild.getEnv());
+});
+
 app.post('/build', upload.array(), function (req, res) {
     Promise.resolve(libbuild.benchmark(req.body, req.headers))
         .then((done) => res.json(libbuild.makeBuildGraphResult(done)))

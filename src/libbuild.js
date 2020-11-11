@@ -3,8 +3,8 @@ var fs = require('fs');
 const tools = require('./tools');
 var sha1 = require('sha1');
 
-const MAX_CODE_LENGTH = process.env.BB_CODE_LIMIT | 20000;
-const TIMEOUT = process.env.BB_TIMEOUT < 0 ? 0 : (process.env.BB_TIMEOUT + 10 | 70);
+const MAX_CODE_LENGTH = process.env.BB_CODE_LIMIT || 20000;
+const TIMEOUT = process.env.BB_TIMEOUT < 0 ? 0 : (process.env.BB_TIMEOUT + 10 || 70);
 
 const WRITE_PATH = '/data';
 
@@ -191,6 +191,13 @@ function getRequestAndResult(done) {
     })));
 }
 
+function getEnv() {
+    return {
+        maxCodeLength: MAX_CODE_LENGTH,
+        timeout: TIMEOUT
+    };
+}
+
 exports.makeName = makeName;
 exports.groupResults = groupResults;
 exports.optionsToString = optionsToString;
@@ -200,3 +207,4 @@ exports.makeBuildGraphResult = makeBuildGraphResult;
 exports.benchmark = benchmark;
 exports.reload = reload;
 exports.getRequestAndResult = getRequestAndResult;
+exports.getEnv = getEnv;
