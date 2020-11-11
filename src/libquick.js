@@ -3,8 +3,8 @@ var sha1 = require('sha1');
 var fs = require('fs');
 const tools = require('./tools');
 
-const MAX_CODE_LENGTH = process.env.QB_CODE_LIMIT | 20000;
-const TIMEOUT = process.env.QB_TIMEOUT < 0 ? 0 : (process.env.QB_TIMEOUT | 60);
+const MAX_CODE_LENGTH = process.env.QB_CODE_LIMIT || 20000;
+const TIMEOUT = process.env.QB_TIMEOUT < 0 ? 0 : (process.env.QB_TIMEOUT || 60);
 
 const WRITE_PATH = '/data';
 const PREFIX_CODE_1 = `#include <benchmark/benchmark_api.h>
@@ -190,6 +190,13 @@ function getRequestAndResult(done) {
     return Object.assign({ tab: request }, makeGraphResult(done.graph, '', tools.encodeName(makeName(request)), done.annotation));
 }
 
+function getEnv() {
+    return {
+        maxCodeLength: MAX_CODE_LENGTH,
+        timeout: TIMEOUT
+    };
+}
+
 exports.makeName = makeName;
 exports.wrapCode = wrapCode;
 exports.unwrapCode = unwrapCode;
@@ -202,3 +209,4 @@ exports.makeGraphResult = makeGraphResult;
 exports.reload = reload;
 exports.makeRequest = makeRequest;
 exports.getRequestAndResult = getRequestAndResult;
+exports.getEnv = getEnv;

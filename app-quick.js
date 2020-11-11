@@ -17,6 +17,10 @@ var upload = multer();
 app.use(bodyParser.json());
 app.use(cors());
 
+app.get('/quick-env', upload.array(), function (req, res) {
+    res.json(libquick.getEnv());
+});
+
 app.post('/quick', upload.array(), function (req, res) {
     Promise.resolve(libquick.benchmark(req.body, req.headers))
         .then((done) => res.json(libquick.makeGraphResult(done.res ? JSON.parse(done.res) : null, done.stdout, done.id, done.annotation)))
