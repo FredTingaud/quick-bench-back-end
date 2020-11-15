@@ -29,14 +29,14 @@ function read(fileName, acceptMissing) {
 }
 
 function encodeName(id) {
-    let short = new Buffer(id, 'hex').toString('base64');
+    let short = Buffer.from(id, 'hex').toString('base64');
     short = short.replace(new RegExp('/', 'g'), '-').replace(new RegExp('\\+', 'g'), '_');
     return short.slice(0, -1);
 }
 
 function decodeName(short) {
     short = short.replace(new RegExp('\\-', 'g'), '/').replace(new RegExp('_', 'g'), '+ ') + '=';
-    return new Buffer(short, 'base64').toString('hex');
+    return Buffer.from(short, 'base64').toString('hex');
 }
 
 /*
