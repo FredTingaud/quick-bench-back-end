@@ -17,6 +17,8 @@ var upload = multer();
 app.use(bodyParser.json());
 app.use(cors());
 
+libquick.listContainers();
+
 app.get('/quick-env', upload.array(), function (req, res) {
     res.json(libquick.getEnv());
 });

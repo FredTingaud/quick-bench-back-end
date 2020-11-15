@@ -33,6 +33,12 @@ static void Noop(benchmark::State& state) {
 BENCHMARK(Noop);
 BENCHMARK_MAIN();`;
 
+var AVAILABLE_CONTAINERS = [];
+
+function listContainers() {
+    tools.listContainers(AVAILABLE_CONTAINERS);
+}
+
 function runDockerCommand(fileName, request) {
     return './run-docker ' + fileName + ' ' + request.options.compiler + ' ' + request.options.optim + ' ' + request.options.cppVersion + ' ' + (request.isAnnotated || false) + ' ' + (request.force || false) + ' ' + (request.options.lib || 'gnu');
 }
@@ -193,10 +199,12 @@ function getRequestAndResult(done) {
 function getEnv() {
     return {
         maxCodeLength: MAX_CODE_LENGTH,
-        timeout: TIMEOUT
+        timeout: TIMEOUT,
+        containers: AVAILABLE_CONTAINERS
     };
 }
 
+exports.listContainers = listContainers;
 exports.makeName = makeName;
 exports.wrapCode = wrapCode;
 exports.unwrapCode = unwrapCode;
