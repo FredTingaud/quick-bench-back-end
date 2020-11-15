@@ -1,0 +1,3 @@
+#!/bin/bash
+
+docker images fredtingaud/quick-bench --format "{{.Tag}}"

@@ -16,6 +16,7 @@ var upload = multer();
 app.use(bodyParser.json());
 app.use(cors());
 
+libbuild.listContainers();
 
 app.get('/build-env', upload.array(), function (req, res) {
     res.json(libbuild.getEnv());

@@ -3,12 +3,16 @@ var fs = require('fs');
 const tools = require('./tools');
 var sha1 = require('sha1');
 
+var AVAILABLE_CONTAINERS = [];
+
 const MAX_CODE_LENGTH = process.env.BB_CODE_LIMIT || 20000;
 const TIMEOUT = process.env.BB_TIMEOUT < 0 ? 0 : (process.env.BB_TIMEOUT + 10 || 70);
 
 const WRITE_PATH = '/data';
 
-
+function listContainers() {
+    tools.listContainers(AVAILABLE_CONTAINERS);
+}
 
 function cleanFilename(text) {
     if (text === '')
@@ -194,10 +198,12 @@ function getRequestAndResult(done) {
 function getEnv() {
     return {
         maxCodeLength: MAX_CODE_LENGTH,
-        timeout: TIMEOUT
+        timeout: TIMEOUT,
+        containers: AVAILABLE_CONTAINERS
     };
 }
 
+exports.listContainers = listContainers;
 exports.makeName = makeName;
 exports.groupResults = groupResults;
 exports.optionsToString = optionsToString;
