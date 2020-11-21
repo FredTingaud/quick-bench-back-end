@@ -65,8 +65,10 @@ else
     chmod 666 $OUTFILE
     touch $INCLUDES
     chmod 666 $INCLUDES
-
-    MEMORY_LIMITS='--memory=500m --cpu-period=100000 --cpu-quota=25000'
+    
+    if [ $UNLIMITED_RESOURCES = false ]; then
+        MEMORY_LIMITS='--memory=500m --cpu-period=100000 --cpu-quota=25000'
+    fi
 
     if [[ $LIB_VERSION == llvm ]] && [[ $COMPILER == clang* ]]; then
         BUILD_COMMAND=time-build-libcxx

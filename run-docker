@@ -63,7 +63,9 @@ else
     touch $OUTFILE
     chmod 666 $OUTFILE
 
-    MEMORY_LIMITS='--memory=500m --cpu-period=100000 --cpu-quota=25000'
+    if [ $UNLIMITED_RESOURCES = false ]; then
+        MEMORY_LIMITS='--memory=500m --cpu-period=100000 --cpu-quota=25000'
+    fi
 
     if [ $RECORD_PERF = true ]; then
         touch $LOC_PERFFILE
