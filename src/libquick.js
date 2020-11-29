@@ -5,6 +5,7 @@ const tools = require('./tools');
 
 const MAX_CODE_LENGTH = process.env.QB_CODE_LIMIT || 20000;
 const TIMEOUT = process.env.QB_TIMEOUT < 0 ? 0 : (process.env.QB_TIMEOUT || 60);
+const ALLOW_CONTAINER_DOWNLOAD = process.env.ALLOW_CONTAINER_DOWNLOAD;
 
 const WRITE_PATH = '/data';
 const PREFIX_CODE_1 = `#include <benchmark/benchmark_api.h>
@@ -200,7 +201,8 @@ function getEnv() {
     return {
         maxCodeLength: MAX_CODE_LENGTH,
         timeout: TIMEOUT,
-        containers: AVAILABLE_CONTAINERS
+        containers: AVAILABLE_CONTAINERS,
+        containerDl: ALLOW_CONTAINER_DOWNLOAD
     };
 }
 
