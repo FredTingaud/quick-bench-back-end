@@ -204,7 +204,7 @@ function getEnv() {
     };
 }
 
-exports.listContainers = listContainers;
+exports.updateAvailableContainersList = listContainers;
 exports.makeName = makeName;
 exports.wrapCode = wrapCode;
 exports.unwrapCode = unwrapCode;

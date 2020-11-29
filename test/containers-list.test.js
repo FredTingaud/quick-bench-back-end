@@ -1,4 +1,4 @@
-const app = require('../src/tools');
+const app = require('../src/docker');
 
 var assert = require('assert');
 
