@@ -2,6 +2,7 @@ var exec = require('child_process').exec;
 var sha1 = require('sha1');
 var fs = require('fs');
 const tools = require('./tools');
+const docker = require('./docker');
 
 const MAX_CODE_LENGTH = process.env.QB_CODE_LIMIT || 20000;
 const TIMEOUT = process.env.QB_TIMEOUT < 0 ? 0 : (process.env.QB_TIMEOUT || 60);
@@ -37,7 +38,7 @@ BENCHMARK_MAIN();`;
 var AVAILABLE_CONTAINERS = [];
 
 function listContainers() {
-    tools.listContainers(AVAILABLE_CONTAINERS);
+    docker.listContainers(AVAILABLE_CONTAINERS);
 }
 
 function runDockerCommand(fileName, request) {

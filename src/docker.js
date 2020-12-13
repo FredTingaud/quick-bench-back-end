@@ -1,3 +1,4 @@
+var exec = require('child_process').exec;
 const fetch = require('node-fetch');
 
 const getToken = async () => {

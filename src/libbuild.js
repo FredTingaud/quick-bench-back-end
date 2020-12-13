@@ -2,6 +2,7 @@ var exec = require('child_process').exec;
 var fs = require('fs');
 const tools = require('./tools');
 var sha1 = require('sha1');
+const docker = require('./docker');
 
 var AVAILABLE_CONTAINERS = [];
 
@@ -11,7 +12,7 @@ const TIMEOUT = process.env.BB_TIMEOUT < 0 ? 0 : (process.env.BB_TIMEOUT + 10 ||
 const WRITE_PATH = '/data';
 
 function listContainers() {
-    tools.listContainers(AVAILABLE_CONTAINERS);
+    docker.listContainers(AVAILABLE_CONTAINERS);
 }
 
 function cleanFilename(text) {
