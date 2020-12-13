@@ -38,6 +38,7 @@ BENCHMARK_MAIN();`;
 var AVAILABLE_CONTAINERS = [];
 
 function listContainers() {
+    AVAILABLE_CONTAINERS = [];
     docker.listContainers(AVAILABLE_CONTAINERS);
 }
 

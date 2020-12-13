@@ -12,6 +12,7 @@ const TIMEOUT = process.env.BB_TIMEOUT < 0 ? 0 : (process.env.BB_TIMEOUT + 10 ||
 const WRITE_PATH = '/data';
 
 function listContainers() {
+    AVAILABLE_CONTAINERS = [];
     docker.listContainers(AVAILABLE_CONTAINERS);
 }
 

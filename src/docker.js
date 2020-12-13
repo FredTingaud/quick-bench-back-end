@@ -52,7 +52,7 @@ function readContainersList(stdout) {
 
 function listContainers(target) {
     exec('./list-containers', {}, (err, stdout, stderr) => {
-        target.concat(readContainersList(stdout));
+        target.push(...readContainersList(stdout));
     });
 }
 
