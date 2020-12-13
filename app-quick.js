@@ -37,17 +37,9 @@ app.get('/quick/:id', upload.array(), function (req, res) {
         .catch(() => res.json({ message: 'Could not load given id' }));
 });
 
-app.get('/:id', upload.array(), function (req, res) {
-    res.redirect(`/q/${req.params.id}`);
-});
-
-app.get('/q/:id', upload.array(), function (req, res) {
-    res.sendFile(path.join(__dirname, 'quick-bench-front-end', 'quick-bench', 'build', 'index.html'));
-});
-
 app.get('/containers/', upload.array(), function (req, res) {
     if (process.env.ALLOW_CONTAINER_DOWNLOAD) {
-        res.json({ "tags": docker.getTags() });
+        Promise.resolve(docker.getTags()).then(t => res.json({ "tags": t }));
     } else {
         res.status(403).send({
             message: 'Access Forbidden'
@@ -58,16 +50,22 @@ app.get('/containers/', upload.array(), function (req, res) {
 app.post('/containers/', upload.array(), function (req, res) {
     if (process.env.ALLOW_CONTAINER_DOWNLOAD) {
         Promise.resolve(docker.loadContainers(res.body.tags))
-            .then(() => {
-                libquick.updateAvailableContainersList();
-                res.json(libquick.getEnv);
-            })
+            .then(() => libquick.updateAvailableContainersList())
+            .then(() => res.json(libquick.getEnv))
             .catch(e => res.status(500).send('Could not load containers'));
     } else {
         res.status(403).send({
             message: 'Access Forbidden'
         });
     }
+});
+
+app.get('/q/:id', upload.array(), function (req, res) {
+    res.sendFile(path.join(__dirname, 'quick-bench-front-end', 'quick-bench', 'build', 'index.html'));
+});
+
+app.get('/:id', upload.array(), function (req, res) {
+    res.redirect(`/q/${req.params.id}`);
 });
 
 app.listen(PORT, function () {

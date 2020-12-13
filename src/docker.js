@@ -9,7 +9,7 @@ const getToken = async () => {
 
 const getTags = async () => {
     const token = await getToken();
-    const response = await fetch(/*'https://registry.hub.docker.com/v2/repositories/fredtingaud/quick-bench/tags/?page=1');*/'https://registry-1.docker.io/v2/fredtingaud/quick-bench/tags/list', {
+    const response = await fetch('https://registry-1.docker.io/v2/fredtingaud/quick-bench/tags/list', {
         method: "GET",
         headers: {
             "Authorization": `Bearer ${token}`,
@@ -19,7 +19,7 @@ const getTags = async () => {
         }
     });
     const json = await response.json();
-    return json['tags'];
+    return json['tags'].sort(sortContainers);
 };
 
 /*
@@ -51,13 +51,32 @@ function readContainersList(stdout) {
 }
 
 function listContainers(target) {
-    exec('./list-containers', {}, (err, stdout, stderr) => {
-        target.push(...readContainersList(stdout));
+    return new Promise((resolve, reject) => {
+        return exec('./list-containers', {}, (err, stdout, stderr) => {
+            if (err) {
+                reject(stderr);
+            } else {
+                target.push(...readContainersList(stdout));
+                resolve();
+            }
+        });
     });
 }
 
-function loadContainers(targetList) {
-    targetList.forEach(t => exec('docker pull fredtingaud/quick-bench:' + t));
+function loadOneContainer(container) {
+    return new Promise((resolve, reject) => {
+        return exec('docker pull fredtingaud/quick-bench:' + container, {}, function (err, stdout, stderr) {
+            if (err) {
+                reject(stderr);
+            } else {
+                resolve();
+            }
+        });
+    });
+}
+
+async function loadContainers(targetList) {
+    await Promise.all(targetList.map(t => loadOneContainer(t)));
 }
 
 exports.listContainers = listContainers;

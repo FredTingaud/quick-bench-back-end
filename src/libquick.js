@@ -37,9 +37,9 @@ BENCHMARK_MAIN();`;
 
 var AVAILABLE_CONTAINERS = [];
 
-function listContainers() {
+async function listContainers() {
     AVAILABLE_CONTAINERS = [];
-    docker.listContainers(AVAILABLE_CONTAINERS);
+    await docker.listContainers(AVAILABLE_CONTAINERS);
 }
 
 function runDockerCommand(fileName, request) {
