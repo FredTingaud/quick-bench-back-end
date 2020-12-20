@@ -60,6 +60,19 @@ app.post('/containers/', upload.array(), function (req, res) {
     }
 });
 
+app.delete('/containers/', upload.array(), function (req, res) {
+    if (process.env.ALLOW_CONTAINER_DOWNLOAD) {
+        Promise.resolve(docker.deleteContainers(req.body.tags))
+            .then(() => libquick.updateAvailableContainersList())
+            .then(() => res.json(libquick.getEnv()))
+            .catch(e => res.status(500).send('Could not delete containers'));
+    } else {
+        res.status(403).send({
+            message: 'Access Forbidden'
+        });
+    }
+});
+
 app.get('/q/:id', upload.array(), function (req, res) {
     res.sendFile(path.join(__dirname, 'quick-bench-front-end', 'quick-bench', 'build', 'index.html'));
 });

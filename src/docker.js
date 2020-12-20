@@ -75,11 +75,28 @@ function loadOneContainer(container) {
     });
 }
 
+function deleteOneContainer(container) {
+    return new Promise((resolve, reject) => {
+        return exec('docker rmi fredtingaud/quick-bench:' + container, {}, function (err, stdout, stderr) {
+            if (err) {
+                reject(stderr);
+            } else {
+                resolve();
+            }
+        });
+    });
+}
+
 async function loadContainers(targetList) {
     await Promise.all(targetList.map(t => loadOneContainer(t)));
+}
+
+async function deleteContainers(targetList) {
+    await Promise.all(targetList.map(t => deleteOneContainer(t)));
 }
 
 exports.listContainers = listContainers;
 exports.readContainersList = readContainersList;
 exports.getTags = getTags;
 exports.loadContainers = loadContainers;
+exports.deleteContainers = deleteContainers;
