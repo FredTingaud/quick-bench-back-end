@@ -49,7 +49,7 @@ app.get('/containers/', upload.array(), function (req, res) {
 
 app.post('/containers/', upload.array(), function (req, res) {
     if (process.env.ALLOW_CONTAINER_DOWNLOAD) {
-        Promise.resolve(docker.loadContainers(res.body.tags))
+        Promise.resolve(docker.loadContainers(req.body.tags))
             .then(() => libquick.updateAvailableContainersList())
             .then(() => res.json(libquick.getEnv))
             .catch(e => res.status(500).send('Could not load containers'));
