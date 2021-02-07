@@ -43,6 +43,42 @@ app.get('/b/:id', upload.array(), function (req, res) {
     res.sendFile(path.join(__dirname, 'quick-bench-front-end', 'build-bench', 'build', 'index.html'));
 });
 
+app.get('/containers/', upload.array(), function (req, res) {
+    if (process.env.ALLOW_CONTAINER_DOWNLOAD) {
+        Promise.resolve(docker.getTags()).then(t => res.json({ "tags": t }));
+    } else {
+        res.status(403).send({
+            message: 'Access Forbidden'
+        });
+    }
+});
+
+app.post('/containers/', upload.array(), function (req, res) {
+    if (process.env.ALLOW_CONTAINER_DOWNLOAD) {
+        Promise.resolve(docker.loadContainers(req.body.tags))
+            .then(() => libbuild.updateAvailableContainersList())
+            .then(() => res.json(libbuild.getEnv()))
+            .catch(e => res.status(500).send('Could not load containers'));
+    } else {
+        res.status(403).send({
+            message: 'Access Forbidden'
+        });
+    }
+});
+
+app.delete('/containers/', upload.array(), function (req, res) {
+    if (process.env.ALLOW_CONTAINER_DOWNLOAD) {
+        Promise.resolve(docker.deleteContainers(req.body.tags))
+            .then(() => libbuild.updateAvailableContainersList())
+            .then(() => res.json(libbuild.getEnv()))
+            .catch(e => res.status(500).send('Could not delete containers'));
+    } else {
+        res.status(403).send({
+            message: 'Access Forbidden'
+        });
+    }
+});
+
 app.listen(PORT, function () {
     console.log(`Listening to commands on port ${PORT}`);
 });
