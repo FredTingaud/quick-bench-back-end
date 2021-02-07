@@ -8,6 +8,7 @@ var AVAILABLE_CONTAINERS = [];
 
 const MAX_CODE_LENGTH = process.env.BB_CODE_LIMIT || 20000;
 const TIMEOUT = process.env.BB_TIMEOUT < 0 ? 0 : (process.env.BB_TIMEOUT + 10 || 70);
+const ALLOW_CONTAINER_DOWNLOAD = process.env.ALLOW_CONTAINER_DOWNLOAD;
 
 const WRITE_PATH = '/data';
 
@@ -201,7 +202,8 @@ function getEnv() {
     return {
         maxCodeLength: MAX_CODE_LENGTH,
         timeout: TIMEOUT,
-        containers: AVAILABLE_CONTAINERS
+        containers: AVAILABLE_CONTAINERS,
+        containerDl: ALLOW_CONTAINER_DOWNLOAD
     };
 }
 
