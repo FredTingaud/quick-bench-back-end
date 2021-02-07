@@ -205,7 +205,7 @@ function getEnv() {
     };
 }
 
-exports.listContainers = listContainers;
+exports.updateAvailableContainersList = listContainers;
 exports.makeName = makeName;
 exports.groupResults = groupResults;
 exports.optionsToString = optionsToString;
