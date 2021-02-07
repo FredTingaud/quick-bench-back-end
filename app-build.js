@@ -8,6 +8,7 @@ app.use(express.static(path.join(__dirname, 'quick-bench-front-end', 'build-benc
 var bodyParser = require('body-parser');
 var multer = require('multer');
 const libbuild = require('./src/libbuild');
+var docker = require('./src/docker');
 
 const PORT = process.env.BB_PORT | 4000;
 
