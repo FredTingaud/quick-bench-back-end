@@ -12,9 +12,9 @@ const ALLOW_CONTAINER_DOWNLOAD = process.env.ALLOW_CONTAINER_DOWNLOAD;
 
 const WRITE_PATH = '/data';
 
-function listContainers() {
+async function listContainers() {
     AVAILABLE_CONTAINERS = [];
-    docker.listContainers(AVAILABLE_CONTAINERS);
+    await docker.listContainers(AVAILABLE_CONTAINERS);
 }
 
 function cleanFilename(text) {
