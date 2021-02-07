@@ -35,14 +35,6 @@ app.get('/build/:id', upload.array(), function (req, res) {
         .catch(() => res.json({ messages: [`Could not load ${req.params.id}`] }));
 });
 
-app.get('/:id', upload.array(), function (req, res) {
-    res.redirect(`/b/${req.params.id}`);
-});
-
-app.get('/b/:id', upload.array(), function (req, res) {
-    res.sendFile(path.join(__dirname, 'quick-bench-front-end', 'build-bench', 'build', 'index.html'));
-});
-
 app.get('/containers/', upload.array(), function (req, res) {
     if (process.env.ALLOW_CONTAINER_DOWNLOAD) {
         Promise.resolve(docker.getTags()).then(t => res.json({ "tags": t }));
@@ -77,6 +69,14 @@ app.delete('/containers/', upload.array(), function (req, res) {
             message: 'Access Forbidden'
         });
     }
+});
+
+app.get('/:id', upload.array(), function (req, res) {
+    res.redirect(`/b/${req.params.id}`);
+});
+
+app.get('/b/:id', upload.array(), function (req, res) {
+    res.sendFile(path.join(__dirname, 'quick-bench-front-end', 'build-bench', 'build', 'index.html'));
 });
 
 app.listen(PORT, function () {
