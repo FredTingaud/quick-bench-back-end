@@ -7,7 +7,7 @@ const docker = require('./docker');
 var AVAILABLE_CONTAINERS = [];
 
 const MAX_CODE_LENGTH = process.env.BB_CODE_LIMIT || 20000;
-const TIMEOUT = process.env.BB_TIMEOUT < 0 ? 0 : (process.env.BB_TIMEOUT + 10 || 70);
+const TIMEOUT = parseInt(process.env.BB_TIMEOUT, 10) < 0 ? 0 : (parseInt(process.env.BB_TIMEOUT, 10) + 10 || 70);
 const ALLOW_CONTAINER_DOWNLOAD = process.env.ALLOW_CONTAINER_DOWNLOAD;
 
 const WRITE_PATH = '/data';
