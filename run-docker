@@ -63,7 +63,7 @@ else
     touch $OUTFILE
     chmod 666 $OUTFILE
 
-    if [ $UNLIMITED_RESOURCES = false ]; then
+    if [ -z $UNLIMITED_RESOURCES ]; then
         MEMORY_LIMITS='--memory=500m --cpu-period=100000 --cpu-quota=25000'
     fi
 
