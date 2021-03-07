@@ -5,7 +5,7 @@ const tools = require('./tools');
 const docker = require('./docker');
 
 const MAX_CODE_LENGTH = process.env.QB_CODE_LIMIT || 20000;
-const TIMEOUT = parseInt(process.env.QB_TIMEOUT, 10) < 0 ? 0 : (parseInt(process.env.QB_TIMEOUT, 10) || 60);
+const TIMEOUT = parseInt(process.env.QB_TIMEOUT, 10) < 0 ? 0 : (parseInt(process.env.QB_TIMEOUT, 10) || 120);
 const ALLOW_CONTAINER_DOWNLOAD = process.env.ALLOW_CONTAINER_DOWNLOAD;
 
 const WRITE_PATH = '/data';
