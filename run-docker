@@ -82,8 +82,8 @@ else
     eval $ANNOTATE_IN
     docker start -a $CONTAINER
     docker cp $CONTAINER:/home/builder/bench.out $OUTFILE
-    docker rm $CONTAINER
     eval $ANNOTATE_OUT
+    docker rm $CONTAINER
     rm $CIDFILE
 fi
 
