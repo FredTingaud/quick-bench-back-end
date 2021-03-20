@@ -4,8 +4,6 @@ set -e
 
 LOCAL_FILE=`realpath $1`
 
-TARGET_FILE="$BENCH_ROOT/$1"
-
 COMPILER=$2
 OPTIM_FLAG=$3
 VERSION_FLAG=$4
@@ -46,13 +44,11 @@ fi
 
 LOCK=$LOCAL_FILE.lock
 lockfile $LOCK
-INFILE=$TARGET_FILE.cpp
+INFILE=$LOCAL_FILE.cpp
 OUTFILE=$LOCAL_FILE.out
-TARG_OUTFILE=$TARGET_FILE.out
 CIDFILE=$LOCAL_FILE.cid
-LOC_PERFFILE=$LOCAL_FILE.perf
-PERFFILE=$TARGET_FILE.perf
-FUNCFILE=$TARGET_FILE.func
+PERFFILE=$LOCAL_FILE.perf
+FUNCFILE=$LOCAL_FILE.func
 if [ $CLEAN_CACHE = true ] && [ -f $OUTFILE ]; then
     rm $OUTFILE
     rm -f $LOC_PERFFILE
@@ -68,18 +64,26 @@ else
     fi
 
     if [ $RECORD_PERF = true ]; then
-        touch $LOC_PERFFILE
-        chmod 666 $LOC_PERFFILE
-        ANNOTATE="--security-opt seccomp=seccomp.json -v $PERFFILE:/home/builder/bench.perf -v $FUNCFILE:/home/builder/bench.func"
+        touch $PERFFILE
+        chmod 666 $PERFFILE
+        ANNOTATE="--security-opt seccomp=seccomp.json"
         ANNOTATE_CMD=" && ./annotate"
         ANNOTATE_RECORD="perf record -g"
+	ANNOTATE_IN="docker cp $FUNCFILE \$CONTAINER:/home/builder/bench.func"
+	ANNOTATE_OUT="docker cp \$CONTAINER:/home/builder/bench.perf $PERFFILE"
     fi
     if [[ $LIB_VERSION == llvm ]] && [[ $COMPILER == clang* ]]; then
         BUILD_COMMAND=build-libcxx
     else
         BUILD_COMMAND=build
     fi
-    docker run --rm $ANNOTATE -v $INFILE:/home/builder/bench-file.cpp $MEMORY_LIMITS --cidfile=$CIDFILE -v $TARG_OUTFILE:/home/builder/bench.out -t fredtingaud/quick-bench:$COMPILER /bin/bash -c "./$BUILD_COMMAND $OPTIM $VERSION && $ANNOTATE_RECORD ./run $ANNOTATE_CMD"
+    CONTAINER=$(docker create $ANNOTATE $MEMORY_LIMITS --cidfile=$CIDFILE -t fredtingaud/quick-bench:$COMPILER /bin/bash -c "./$BUILD_COMMAND $OPTIM $VERSION && $ANNOTATE_RECORD ./run $ANNOTATE_CMD")
+    docker cp $INFILE $CONTAINER:/home/builder/bench-file.cpp
+    eval $ANNOTATE_IN
+    docker start -a $CONTAINER
+    docker cp $CONTAINER:/home/builder/bench.out $OUTFILE
+    docker rm $CONTAINER
+    eval $ANNOTATE_OUT
     rm $CIDFILE
 fi
 

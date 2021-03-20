@@ -28,7 +28,6 @@ describe('run build-bench', function () {
             withPP: true
         };
         expect(version).to.be.ok;
-        process.env.BENCH_ROOT = process.cwd();
         const done = await libbuild.execute('system-test/build/test', request, 3, true);
         // Time results are rows of 7 elements separated by tabs
         expect(done.res.split('\n')).to.have.lengthOf.above(1);
