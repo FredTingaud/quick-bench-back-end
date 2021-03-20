@@ -101,6 +101,7 @@ else
     docker cp $CONTAINER:/home/builder/bench.inc $INCLUDES
     eval $PP_OUT
     eval $ASM_OUT
+    docker rm $CONTAINER
     rm $CIDFILE
 fi
 
