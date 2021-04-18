@@ -29,7 +29,6 @@ describe('run docker with version', function () {
             force: "true"
         };
         expect(version).to.be.ok;
-        process.env.BENCH_ROOT = process.cwd();
         const done = await libquick.execute('system-test/quick/test', request);
         const parsed = JSON.parse(done.res);
         expect(parsed.benchmarks).to.have.length(2);
