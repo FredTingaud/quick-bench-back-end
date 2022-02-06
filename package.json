@@ -25,10 +25,10 @@
     "chai": "^4.3.0",
     "child_process": "^1.0.2",
     "cors": "^2.8.5",
-    "express": "^4.17.1",
+    "express": "^4.17.2",
     "fs": "0.0.2",
     "multer": "^1.4.2",
-    "node-fetch": "^2.6.1",
+    "node-fetch": "^2.6.7",
     "request": "^2.88.2",
     "sha1": "^1.1.1"
   },
