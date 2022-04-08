@@ -9,7 +9,7 @@ TARGET_FILE="$BENCH_ROOT/$1"
 COMPILER=$2
 OPTIM_FLAG=$3
 VERSION_FLAG=$4
-RECORD_PERF=$5
+OPTIONAL_RECORD_ASM_FORMAT=$5
 CLEAN_CACHE=$6
 LIB_VERSION=$7
 
@@ -53,11 +53,19 @@ CIDFILE=$LOCAL_FILE.cid
 LOC_PERFFILE=$LOCAL_FILE.perf
 PERFFILE=$TARGET_FILE.perf
 FUNCFILE=$TARGET_FILE.func
+
+if [ ${OPTIONAL_RECORD_ASM_FORMAT} == "no" ]; then
+	RECORD_PERF="no"
+else
+	RECORD_PERF="yes"
+fi
+ASM_FORMAT=${OPTIONAL_RECORD_ASM_FORMAT}
+
 if [ $CLEAN_CACHE = true ] && [ -f $OUTFILE ]; then
     rm $OUTFILE
     rm -f $LOC_PERFFILE
 fi
-if [ -f $OUTFILE ] && ([ $RECORD_PERF = false ] || [ -f $LOC_PERFFILE ]); then
+if [ -f $OUTFILE ] && ([ ${RECORD_PERF} = false ] || [ -f $LOC_PERFFILE ]); then
     >&2 echo "Showing cached results"
 else
     touch $OUTFILE
@@ -67,11 +75,11 @@ else
         MEMORY_LIMITS='--memory=500m --cpu-period=100000 --cpu-quota=25000'
     fi
 
-    if [ $RECORD_PERF = true ]; then
+    if [ "${RECORD_PERF}" = "yes" ]; then
         touch $LOC_PERFFILE
         chmod 666 $LOC_PERFFILE
         ANNOTATE="--security-opt seccomp=seccomp.json -v $PERFFILE:/home/builder/bench.perf -v $FUNCFILE:/home/builder/bench.func"
-        ANNOTATE_CMD=" && ./annotate"
+        ANNOTATE_CMD=" && ASM_FORMAT=${ASM_FORMAT} ./annotate"
         ANNOTATE_RECORD="perf record -g"
     fi
     if [[ $LIB_VERSION == llvm ]] && [[ $COMPILER == clang* ]]; then

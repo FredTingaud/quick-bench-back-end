@@ -43,13 +43,13 @@ async function listContainers() {
 }
 
 function runDockerCommand(fileName, request) {
-    return './run-docker ' + fileName + ' ' + request.options.compiler + ' ' + request.options.optim + ' ' + request.options.cppVersion + ' ' + (request.isAnnotated || false) + ' ' + (request.force || false) + ' ' + (request.options.lib || 'gnu');
+    return './run-docker ' + fileName + ' ' + request.options.compiler + ' ' + request.options.optim + ' ' + request.options.cppVersion + ' ' + (request.disassemblyOption || false) + ' ' + (request.force || false) + ' ' + (request.options.lib || 'gnu');
 }
 
 function optionsToString(request) {
     let options = {
         protocolVersion: request.protocolVersion,
-        isAnnotated: request.isAnnotated,
+        disassemblyOption: request.disassemblyOption,
         compiler: request.options.compiler,
         optim: request.options.optim,
         cppVersion: request.options.cppVersion,
@@ -74,11 +74,13 @@ function execute(fileName, request) {
             } else {
                 console.timeEnd(fileName);
                 console.log('Bench done ' + fileName + (stderr.indexOf('cached results') > -1 ? ' from cache' : ''));
+                const perfRecorded = !request.disassemblyOption.match("no")
                 resolve({
                     res: fs.readFileSync(fileName + '.out'),
                     stdout: stderr,
                     id: tools.encodeName(makeName(request)),
-                    annotation: request.isAnnotated ? fs.readFileSync(fileName + '.perf', 'utf8') : null
+                    annotation: perfRecorded? fs.readFileSync(fileName + '.perf', 'utf8') : null,
+										disassemblyOption: request.disassemblyOption,
                 });
             }
         });
@@ -94,17 +96,22 @@ function groupResults(results) {
     let options = results[1];
     let graph = results[2];
     let annotation = results[3];
-    return { code: code, options: parseOptions(options), graph: JSON.parse(graph), annotation: annotation };
+    let parsedOptions = parseOptions(options);
+    let disassemblyOption = "no"
+    if (parsedOptions.disassemblyOption) {
+      disassemblyOption = parsedOptions.disassemblyOption;
+		}
+    return { code: code, options: parseOptions(options), graph: JSON.parse(graph), annotation: annotation, disassemblyOption: disassemblyOption };
 }
 
 function makeName(request) {
     if (request.protocolVersion === 1)
         return sha1(request.code + request.compiler + request.optim + request.cppVersion + request.protocolVersion);
     else if (request.protocolVersion === 2)
-        return sha1(request.code + request.compiler + request.optim + request.cppVersion + request.isAnnotated + request.protocolVersion);
+        return sha1(request.code + request.compiler + request.optim + request.cppVersion + request.disassemblyOption + request.protocolVersion);
     else if (request.protocolVersion === 3)
-        return sha1(request.code + request.compiler + request.optim + request.cppVersion + request.isAnnotated + request.protocolVersion + request.lib);
-    return sha1(request.code + request.options.compiler + request.options.optim + request.options.cppVersion + request.isAnnotated + request.protocolVersion + request.options.lib);
+        return sha1(request.code + request.compiler + request.optim + request.cppVersion + request.disassemblyOption + request.protocolVersion + request.lib);
+    return sha1(request.code + request.options.compiler + request.options.optim + request.options.cppVersion + request.disassemblyOption + request.protocolVersion + request.options.lib);
 }
 
 function wrapCode(inputCode) {
@@ -166,7 +173,7 @@ async function reload(encodedName) {
     return groupResults(values);
 }
 
-function makeGraphResult(values, message, id, annotation) {
+function makeGraphResult(values, message, id, annotation, disassemblyOption) {
     let result = {};
     if (values) {
         result = { context: values.context };
@@ -178,7 +185,7 @@ function makeGraphResult(values, message, id, annotation) {
             };
         });
     }
-    return { result: result, message: message, id: id, annotation: annotation };
+    return { result: result, message: message, id: id, annotation: annotation, disassemblyOption: disassemblyOption};
 }
 
 function makeRequest(done) {
@@ -190,13 +197,13 @@ function makeRequest(done) {
             cppVersion: done.options.cppVersion,
             lib: done.options.lib
         },
-        isAnnotated: done.options.isAnnotated,
+        disassemblyOption: done.options.disassemblyOption,
         protocolVersion: done.options.protocolVersion
     };
 }
 function getRequestAndResult(done) {
     const request = makeRequest(done);
-    return Object.assign({ tab: request }, makeGraphResult(done.graph, '', tools.encodeName(makeName(request)), done.annotation));
+    return Object.assign({ tab: request }, makeGraphResult(done.graph, '', tools.encodeName(makeName(request)), done.annotation, done.disassemblyOption));
 }
 
 function getEnv() {
