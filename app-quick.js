@@ -26,7 +26,7 @@ app.get('/quick-env', upload.array(), function (req, res) {
 
 app.post('/quick', upload.array(), function (req, res) {
     Promise.resolve(libquick.benchmark(req.body, req.headers))
-        .then((done) => res.json(libquick.makeGraphResult(done.res ? JSON.parse(done.res) : null, done.stdout, done.id, done.annotation)))
+        .then((done) => res.json(libquick.makeGraphResult(done.res ? JSON.parse(done.res) : null, done.stdout, done.id, done.annotation, done.disassemblyOption)))
         .catch((err) => res.json({ message: err }));
 });
 

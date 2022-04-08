@@ -7,7 +7,7 @@ LOCAL_FILE=$(realpath "$1")
 COMPILER=$2
 OPTIM_FLAG=$3
 VERSION_FLAG=$4
-RECORD_PERF=$5
+ASM_FORMAT=$5
 CLEAN_CACHE=$6
 LIB_VERSION=$7
 ADDITIONAL_FLAGS=${*:8}
@@ -51,6 +51,12 @@ CIDFILE=$LOCAL_FILE.cid
 PERFFILE=$LOCAL_FILE.perf
 FUNCFILE=$LOCAL_FILE.func
 CONTAINERFILE=$LOCAL_FILE.cont
+if [ "${ASM_FORMAT}" == "no" ]; then
+	RECORD_PERF="no"
+else
+	RECORD_PERF="yes"
+fi
+
 if [ "$CLEAN_CACHE" = true ] && [ -f "$OUTFILE" ]; then
     rm "$OUTFILE"
     rm -f "$PERFFILE"
@@ -65,11 +71,11 @@ else
         MEMORY_LIMITS='--memory=500m --cpu-period=100000 --cpu-quota=25000'
     fi
 
-    if [ "$RECORD_PERF" = true ]; then
+    if [ "${RECORD_PERF}" = "yes" ]; then
         touch "$PERFFILE"
         chmod 666 "$PERFFILE"
         ANNOTATE="--security-opt seccomp=seccomp.json"
-        ANNOTATE_CMD=" && ./annotate"
+        ANNOTATE_CMD=" && ASM_FORMAT=${ASM_FORMAT} ./annotate"
         ANNOTATE_RECORD="perf record -g"
         ANNOTATE_IN="docker cp $FUNCFILE \$CONTAINER:/home/builder/bench.func"
         ANNOTATE_OUT="docker cp \$CONTAINER:/home/builder/bench.perf $PERFFILE"
