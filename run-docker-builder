@@ -46,6 +46,7 @@ INCLUDES=$LOCAL_FILE.inc
 ASM=$LOCAL_FILE.s
 PP=$LOCAL_FILE.i
 CIDFILE=$LOCAL_FILE.cid
+CONTAINERFILE=$LOCAL_FILE.cont
 if [ $CLEAN_CACHE = true ] && [ -f $OUTFILE ]; then
     rm $OUTFILE
     rm -f $INCLUDES
@@ -95,6 +96,7 @@ else
                               $ENV_PARAMS \
                fredtingaud/quick-bench:$COMPILER /bin/bash -c "./$PREBUILD_COMMAND $FILE_NAME $PREBUILD_PARAMS $OPTIM $VERSION && ./$BUILD_COMMAND $FILE_NAME $OPTIM $VERSION"
     )
+    echo $CONTAINER > $CONTAINERFILE
     docker cp $INFILE $CONTAINER:/home/builder/$FILE_NAME
     docker start -a $CONTAINER
     docker cp $CONTAINER:/home/builder/bench.out $OUTFILE
@@ -102,6 +104,7 @@ else
     eval $PP_OUT
     eval $ASM_OUT
     docker rm $CONTAINER
+    rm $CONTAINERFILE
     rm $CIDFILE
 fi
 

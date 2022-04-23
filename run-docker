@@ -49,6 +49,7 @@ OUTFILE=$LOCAL_FILE.out
 CIDFILE=$LOCAL_FILE.cid
 PERFFILE=$LOCAL_FILE.perf
 FUNCFILE=$LOCAL_FILE.func
+CONTAINERFILE=$LOCAL_FILE.cont
 if [ $CLEAN_CACHE = true ] && [ -f $OUTFILE ]; then
     rm $OUTFILE
     rm -f $LOC_PERFFILE
@@ -78,12 +79,14 @@ else
         BUILD_COMMAND=build
     fi
     CONTAINER=$(docker create $ANNOTATE $MEMORY_LIMITS --cidfile=$CIDFILE -t fredtingaud/quick-bench:$COMPILER /bin/bash -c "./$BUILD_COMMAND $OPTIM $VERSION && $ANNOTATE_RECORD ./run $ANNOTATE_CMD")
+    echo $CONTAINER > $CONTAINERFILE
     docker cp $INFILE $CONTAINER:/home/builder/bench-file.cpp
     eval $ANNOTATE_IN
     docker start -a $CONTAINER
     docker cp $CONTAINER:/home/builder/bench.out $OUTFILE
     eval $ANNOTATE_OUT
     docker rm $CONTAINER
+    rm $CONTAINERFILE
     rm $CIDFILE
 fi
 

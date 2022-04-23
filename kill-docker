@@ -1,12 +1,14 @@
 #!/bin/bash
 
 FILE=$1.cid
+CONTAINERFILE=$1.cont
 
-if [ -f $FILE ]; then
-    docker kill `cat $FILE`
-    rm $1.out
-    rm $1.build
-    rm -f $1.perf
-    rm $FILE
+if [ -f "$FILE" ]; then
+    docker kill "$(cat "$FILE")"
+    rm "$1".out
+    rm "$1".build
+    rm -f "$1".perf
+    rm "$FILE"
+    docker rm -f "$(cat "$CONTAINERFILE")"
 fi
-rm -f $1.lock
+rm -f "$1".lock
