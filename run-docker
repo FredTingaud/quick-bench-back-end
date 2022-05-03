@@ -48,7 +48,7 @@ INFILE=$LOCAL_FILE.cpp
 OUTFILE=$LOCAL_FILE.out
 CIDFILE=$LOCAL_FILE.cid
 PERFFILE=$LOCAL_FILE.perf
-FUNCFILE=$TARGET_FILE.func
+FUNCFILE=$LOCAL_FILE.func
 CONTAINERFILE=$LOCAL_FILE.cont
 
 if [ ${OPTIONAL_RECORD_ASM_FORMAT} == "no" ]; then
@@ -62,7 +62,7 @@ if [ $CLEAN_CACHE = true ] && [ -f $OUTFILE ]; then
     rm $OUTFILE
     rm -f $LOC_PERFFILE
 fi
-if [ -f $OUTFILE ] && ([ ${RECORD_PERF} = false ] || [ -f $LOC_PERFFILE ]); then
+if [ -f $OUTFILE ] && ([ ${RECORD_PERF} = false ]); then
     >&2 echo "Showing cached results"
 else
     touch $OUTFILE
@@ -76,7 +76,6 @@ else
         touch $PERFFILE
         chmod 666 $PERFFILE
         ANNOTATE="--security-opt seccomp=seccomp.json"
-        ANNOTATE_CMD=" && ./annotate"
         ANNOTATE_CMD=" && ASM_FORMAT=${ASM_FORMAT} ./annotate"
         ANNOTATE_RECORD="perf record -g"
         ANNOTATE_IN="docker cp $FUNCFILE \$CONTAINER:/home/builder/bench.func"
