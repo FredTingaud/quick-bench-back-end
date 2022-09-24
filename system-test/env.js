@@ -15,3 +15,18 @@ describe('check compiler version inside docker', function () {
         expect(result).to.eql(version);
     }).timeout(60000);
 });
+
+describe('check available standards', function() {
+    it('should contain multiple standards', async() =>{
+        const exec = require('child_process').exec;
+        let options = {
+            timeout: 60000,
+            killSignal: 'SIGKILL'
+        };
+        const result = await new Promise(resolve => exec(`docker run --rm -t fredtingaud/quick-bench:${version} /bin/bash -c "./std-versions"`, options, (error, stdout, stderr) => {
+            resolve(stdout + stderr);
+        }));
+        expect(result).to.not.be.empty();
+        expect(result).to.contain('c++11');
+    })
+})
