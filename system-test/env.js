@@ -26,7 +26,8 @@ describe('check available flags', function() {
         const result = await new Promise(resolve => exec(`docker run --rm -t fredtingaud/quick-bench:${version} /bin/bash -c "./about-me"`, options, (error, stdout, stderr) => {
             resolve(stdout + stderr);
         }));
-        expect(result).to.be.a('string').and.satisfy(msg => msg.startsWith('[version]\n1\n[std]'));
+        // No idea why but despite the whole chain being unix talking to unix, we get a bunch of \r in chai results.
+        expect(result.replaceAll('\r', '')).to.be.a('string').and.satisfy(msg => msg.startsWith('[version]\n1\n[std]'));
         expect(result).to.have.string('c++11');
     })
 })
