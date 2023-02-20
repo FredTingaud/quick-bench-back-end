@@ -11,11 +11,11 @@ var libquick = require('./src/libquick');
 var docker = require('./src/docker');
 
 const PORT = process.env.QB_PORT | 4000;
+const POST_LIMIT = process.env.QB_POST_LIMIT | (100 * 1024);
 
 var upload = multer();
 
-
-app.use(bodyParser.json());
+app.use(bodyParser.json({limit: POST_LIMIT}));
 app.use(cors());
 
 libquick.updateAvailableContainersList();
