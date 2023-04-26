@@ -2,7 +2,7 @@
 
 set -e
 
-LOCAL_FILE=`realpath $1`
+LOCAL_FILE=$(realpath "$1")
 
 COMPILER=$2
 OPTIM_FLAG=$3

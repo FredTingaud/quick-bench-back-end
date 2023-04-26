@@ -46,6 +46,32 @@ function sortContainers(c1, c2) {
     }
 }
 
+function describeContainer(name) {
+    return new Promise((resolve, reject) => {
+        return exec('./about-container ' + name, {}, (err, stdout, stderr) => {
+            if (err) {
+                reject(stderr);
+            } else {
+                let result = {name: name};
+                let title = '';
+                for (const l of stdout.split('\n')) {
+                    const line = l.trim();
+                    if (line === "") {
+                        continue;
+                    }
+                    if (line.startsWith('[') && line.endsWith(']')){
+                        title = line.substring(1, line.length - 1);
+                        result[title] = [];
+                    } else {
+                        result[title].push(line)
+                    }
+                }
+                resolve(result);
+            };
+        });
+    });
+}
+
 function readContainersList(stdout) {
     return stdout.split('\n').filter(Boolean).sort(sortContainers);
 }
@@ -56,11 +82,15 @@ function listContainers(target) {
             if (err) {
                 reject(stderr);
             } else {
-                target.push(...readContainersList(stdout));
-                resolve();
+                resolve(stdout);
             }
         });
-    });
+    }).then(stdout => {
+        return Promise.all(readContainersList(stdout).map(c => describeContainer(c)));
+    }).then(m => {
+        console.log(JSON.stringify(m));
+        target.push(...m);
+    }).catch(e => console.log(`Failed listing containers: JSON.stringify(e)`));
 }
 
 function loadOneContainer(container) {
