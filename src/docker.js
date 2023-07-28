@@ -50,7 +50,7 @@ function describeContainer(name) {
     return new Promise((resolve, reject) => {
         return exec('./about-container ' + name, {}, (err, stdout, stderr) => {
             if (err) {
-                reject(stderr);
+                reject(`Couldn't describe container for ${name}:\n${stderr}`);
             } else {
                 let result = {name: name};
                 let title = '';
@@ -90,7 +90,7 @@ function listContainers(target) {
     }).then(m => {
         console.log(JSON.stringify(m));
         target.push(...m);
-    }).catch(e => console.log(`Failed listing containers: JSON.stringify(e)`));
+    }).catch(e => console.log(e));
 }
 
 function loadOneContainer(container) {
