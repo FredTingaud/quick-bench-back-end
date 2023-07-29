@@ -13,7 +13,7 @@ dir="/srv/quick-bench-back-end"
 cmd="NODE_ENV=production ./app.js"
 user="quick-bench"
 
-name=`basename $0`
+name=$(basename "$0")
 pid_file="/var/run/$name.pid"
 stdout_log="/var/log/$name.log"
 stderr_log="/var/log/$name.err"
@@ -23,7 +23,7 @@ get_pid() {
 }
 
 is_running() {
-    [ -f "$pid_file" ] && ps `get_pid` > /dev/null 2>&1
+    [ -f "$pid_file" ] && ps "$(get_pid)" > /dev/null 2>&1
 }
 
 case "$1" in
@@ -34,9 +34,9 @@ case "$1" in
         echo "Starting $name"
         cd "$dir"
         if [ -z "$user" ]; then
-            sudo $cmd >> "$stdout_log" 2>> "$stderr_log" &
+            sudo "$cmd" >> "$stdout_log" 2>> "$stderr_log" &
         else
-            sudo -u "$user" $cmd >> "$stdout_log" 2>> "$stderr_log" &
+            sudo -u "$user" "$cmd" >> "$stdout_log" 2>> "$stderr_log" &
         fi
         echo $! > "$pid_file"
         if ! is_running; then
@@ -48,7 +48,7 @@ case "$1" in
     stop)
     if is_running; then
         echo -n "Stopping $name.."
-        kill `get_pid`
+        kill "$(get_pid)"
         for i in {1..10}
         do
             if ! is_running; then

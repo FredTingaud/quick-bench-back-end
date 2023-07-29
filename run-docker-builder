@@ -2,7 +2,7 @@
 
 set -e
 
-LOCAL_FILE=`realpath $1`
+LOCAL_FILE=$(realpath "$1")
 
 COMPILER=$2
 OPTIM_FLAG=$3
@@ -18,11 +18,11 @@ if ! [[ $COMPILER == "clang-"?*"."? || $COMPILER == "gcc-"?*"."? ]] ; then
     exit 1
 fi
 
-if [ $OPTIM_FLAG == 1 ]; then
+if [ "$OPTIM_FLAG" == 1 ]; then
     OPTIM="-O1"
-elif [ $OPTIM_FLAG == 2 ]; then
+elif [ "$OPTIM_FLAG" == 2 ]; then
     OPTIM="-O2"
-elif [ $OPTIM_FLAG == 3 ]; then
+elif [ "$OPTIM_FLAG" == 3 ]; then
     OPTIM="-O3"
 fi
 
@@ -31,7 +31,7 @@ if [[ $VERSION_FLAG =~ c\+\+[0-9][0-9a-z] ]]; then
 fi
 
 LOCK=$LOCAL_FILE.lock
-lockfile $LOCK
+lockfile "$LOCK"
 INFILE=$LOCAL_FILE.cpp
 OUTFILE=$LOCAL_FILE.build
 INCLUDES=$LOCAL_FILE.inc
@@ -39,21 +39,21 @@ ASM=$LOCAL_FILE.s
 PP=$LOCAL_FILE.i
 CIDFILE=$LOCAL_FILE.cid
 CONTAINERFILE=$LOCAL_FILE.cont
-if [ $CLEAN_CACHE = true ] && [ -f $OUTFILE ]; then
-    rm $OUTFILE
-    rm -f $INCLUDES
-    rm -f $ASM
-    rm -f $PP
+if [ "$CLEAN_CACHE" = true ] && [ -f "$OUTFILE" ]; then
+    rm "$OUTFILE"
+    rm -f "$INCLUDES"
+    rm -f "$ASM"
+    rm -f "$PP"
 fi
-if [ -f $OUTFILE ] && [[ $RECORD_PERF -eq false || -f $PERFFILE ]]; then
+if [ -f "$OUTFILE" ] && [[ $RECORD_PERF -eq false || -f $PERFFILE ]]; then
     >&2 echo "Showing cached results"
 else
-    touch $OUTFILE
-    chmod 666 $OUTFILE
-    touch $INCLUDES
-    chmod 666 $INCLUDES
+    touch "$OUTFILE"
+    chmod 666 "$OUTFILE"
+    touch "$INCLUDES"
+    chmod 666 "$INCLUDES"
     
-    if [ -z $UNLIMITED_RESOURCES ]; then
+    if [ -z "$UNLIMITED_RESOURCES" ]; then
         MEMORY_LIMITS='--memory=500m --cpu-period=100000 --cpu-quota=25000'
     fi
 
@@ -65,14 +65,14 @@ else
         PREBUILD_COMMAND=prebuild
     fi
 
-    if [ $RECORD_PP = true ]; then
-        touch $PP
-        chmod 666 $PP
+    if [ "$RECORD_PP" = true ]; then
+        touch "$PP"
+        chmod 666 "$PP"
 	PP_OUT="docker cp \$CONTAINER:/home/builder/bench.i $PP"
     fi
     if [ "$RECORD_ASM" != "none" ]; then
-        touch $ASM
-        chmod 666 $ASM
+        touch "$ASM"
+        chmod 666 "$ASM"
 	ASM_OUT="docker cp \$CONTAINER:/home/builder/bench.s $ASM"
     fi
 
@@ -84,20 +84,20 @@ else
         ENV_PARAMS="$ENV_PARAMS -e BB_MAX=$BB_MAX_ITERATION"
     fi
     CONTAINER=$(docker create $ANNOTATE $MEMORY_LIMITS \
-                              --cidfile=$CIDFILE \
+                              --cidfile="$CIDFILE" \
                               $ENV_PARAMS \
-               fredtingaud/quick-bench:$COMPILER /bin/bash -c "./$PREBUILD_COMMAND $FILE_NAME $PREBUILD_PARAMS $OPTIM $VERSION && ./$BUILD_COMMAND $FILE_NAME $OPTIM $VERSION"
+               fredtingaud/quick-bench:"$COMPILER" /bin/bash -c "./$PREBUILD_COMMAND $FILE_NAME $PREBUILD_PARAMS $OPTIM $VERSION && ./$BUILD_COMMAND $FILE_NAME $OPTIM $VERSION"
     )
-    echo $CONTAINER > $CONTAINERFILE
-    docker cp $INFILE $CONTAINER:/home/builder/$FILE_NAME
-    docker start -a $CONTAINER
-    docker cp $CONTAINER:/home/builder/bench.out $OUTFILE
-    docker cp $CONTAINER:/home/builder/bench.inc $INCLUDES
+    echo "$CONTAINER" > "$CONTAINERFILE"
+    docker cp "$INFILE" "$CONTAINER":/home/builder/"$FILE_NAME"
+    docker start -a "$CONTAINER"
+    docker cp "$CONTAINER":/home/builder/bench.out "$OUTFILE"
+    docker cp "$CONTAINER":/home/builder/bench.inc "$INCLUDES"
     eval $PP_OUT
     eval $ASM_OUT
-    docker rm $CONTAINER
-    rm $CONTAINERFILE
-    rm $CIDFILE
+    docker rm "$CONTAINER"
+    rm "$CONTAINERFILE"
+    rm "$CIDFILE"
 fi
 
-rm -f $LOCK
+rm -f "$LOCK"

@@ -16,17 +16,17 @@ if ! [[ $COMPILER == "clang-"?*"."? || $COMPILER == "gcc-"?*"."? ]] ; then
     exit 1
 fi
 
-if [ $OPTIM_FLAG == 1 ]; then
+if [ "$OPTIM_FLAG" == 1 ]; then
     OPTIM="-O1"
-elif [ $OPTIM_FLAG == 2 ]; then
+elif [ "$OPTIM_FLAG" == 2 ]; then
     OPTIM="-O2"
-elif [ $OPTIM_FLAG == 3 ]; then
+elif [ "$OPTIM_FLAG" == 3 ]; then
     OPTIM="-O3"
-elif [ $3 == "S" ]; then
+elif [ "$OPTIM_FLAG" == "S" ]; then
     OPTIM="-Os"
-elif [ $3 == "G" ]; then
+elif [ "$OPTIM_FLAG" == "G" ]; then
     OPTIM="-Og"
-elif [ $3 == "F" ]; then
+elif [ "$OPTIM_FLAG" == "F" ]; then
     OPTIM="-Ofast"
 fi
 
@@ -35,30 +35,30 @@ if [[ $VERSION_FLAG =~ c\+\+[0-9][0-9a-z] ]]; then
 fi
 
 LOCK=$LOCAL_FILE.lock
-lockfile $LOCK
+lockfile "$LOCK"
 INFILE=$LOCAL_FILE.cpp
 OUTFILE=$LOCAL_FILE.out
 CIDFILE=$LOCAL_FILE.cid
 PERFFILE=$LOCAL_FILE.perf
 FUNCFILE=$LOCAL_FILE.func
 CONTAINERFILE=$LOCAL_FILE.cont
-if [ $CLEAN_CACHE = true ] && [ -f $OUTFILE ]; then
-    rm $OUTFILE
-    rm -f $LOC_PERFFILE
+if [ "$CLEAN_CACHE" = true ] && [ -f "$OUTFILE" ]; then
+    rm "$OUTFILE"
+    rm -f "$LOC_PERFFILE"
 fi
-if [ -f $OUTFILE ] && ([ $RECORD_PERF = false ] || [ -f $LOC_PERFFILE ]); then
+if [ -f "$OUTFILE" ] && { [ "$RECORD_PERF" = false ] || [ -f "$LOC_PERFFILE" ]; } ; then
     >&2 echo "Showing cached results"
 else
-    touch $OUTFILE
-    chmod 666 $OUTFILE
+    touch "$OUTFILE"
+    chmod 666 "$OUTFILE"
 
-    if [ -z $UNLIMITED_RESOURCES ]; then
+    if [ -z "$UNLIMITED_RESOURCES" ]; then
         MEMORY_LIMITS='--memory=500m --cpu-period=100000 --cpu-quota=25000'
     fi
 
-    if [ $RECORD_PERF = true ]; then
-        touch $PERFFILE
-        chmod 666 $PERFFILE
+    if [ "$RECORD_PERF" = true ]; then
+        touch "$PERFFILE"
+        chmod 666 "$PERFFILE"
         ANNOTATE="--security-opt seccomp=seccomp.json"
         ANNOTATE_CMD=" && ./annotate"
         ANNOTATE_RECORD="perf record -g"
@@ -70,16 +70,16 @@ else
     else
         BUILD_COMMAND=build
     fi
-    CONTAINER=$(docker create $ANNOTATE $MEMORY_LIMITS --cidfile=$CIDFILE -t fredtingaud/quick-bench:$COMPILER /bin/bash -c "./$BUILD_COMMAND $OPTIM $VERSION && $ANNOTATE_RECORD ./run $ANNOTATE_CMD")
-    echo $CONTAINER > $CONTAINERFILE
-    docker cp $INFILE $CONTAINER:/home/builder/bench-file.cpp
+    CONTAINER=$(docker create $ANNOTATE $MEMORY_LIMITS --cidfile="$CIDFILE" -t fredtingaud/quick-bench:"$COMPILER" /bin/bash -c "./$BUILD_COMMAND $OPTIM $VERSION && $ANNOTATE_RECORD ./run $ANNOTATE_CMD")
+    echo "$CONTAINER" > "$CONTAINERFILE"
+    docker cp "$INFILE" "$CONTAINER":/home/builder/bench-file.cpp
     eval $ANNOTATE_IN
-    docker start -a $CONTAINER
-    docker cp $CONTAINER:/home/builder/bench.out $OUTFILE
+    docker start -a "$CONTAINER"
+    docker cp "$CONTAINER":/home/builder/bench.out "$OUTFILE"
     eval $ANNOTATE_OUT
-    docker rm $CONTAINER
-    rm $CONTAINERFILE
-    rm $CIDFILE
+    docker rm "$CONTAINER"
+    rm "$CONTAINERFILE"
+    rm "$CIDFILE"
 fi
 
-rm -f $LOCK
+rm -f "$LOCK"
