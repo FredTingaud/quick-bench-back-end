@@ -30,16 +30,8 @@ elif [ $3 == "F" ]; then
     OPTIM="-Ofast"
 fi
 
-if [ $VERSION_FLAG == 11 ]; then
-    VERSION="-std=c++11"
-elif [ $VERSION_FLAG == 14 ]; then
-    VERSION="-std=c++14"
-elif [ $VERSION_FLAG == 17 ]; then
-    VERSION="-std=c++1z"
-elif [ $VERSION_FLAG == 20 ]; then
-    VERSION="-std=c++2a"
-else
-    VERSION="-std=c++98 -Werror=c++11-extensions"
+if [[ $VERSION_FLAG =~ c\+\+[0-9][0-9a-z] ]]; then
+    VERSION="-std=${VERSION_FLAG}"
 fi
 
 LOCK=$LOCAL_FILE.lock
