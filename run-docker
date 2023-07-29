@@ -44,9 +44,9 @@ FUNCFILE=$LOCAL_FILE.func
 CONTAINERFILE=$LOCAL_FILE.cont
 if [ "$CLEAN_CACHE" = true ] && [ -f "$OUTFILE" ]; then
     rm "$OUTFILE"
-    rm -f "$LOC_PERFFILE"
+    rm -f "$PERFFILE"
 fi
-if [ -f "$OUTFILE" ] && { [ "$RECORD_PERF" = false ] || [ -f "$LOC_PERFFILE" ]; } ; then
+if [ -f "$OUTFILE" ] && [[ "$RECORD_PERF" = false || -f "$PERFFILE" ]]; then
     >&2 echo "Showing cached results"
 else
     touch "$OUTFILE"
@@ -62,8 +62,8 @@ else
         ANNOTATE="--security-opt seccomp=seccomp.json"
         ANNOTATE_CMD=" && ./annotate"
         ANNOTATE_RECORD="perf record -g"
-	ANNOTATE_IN="docker cp $FUNCFILE \$CONTAINER:/home/builder/bench.func"
-	ANNOTATE_OUT="docker cp \$CONTAINER:/home/builder/bench.perf $PERFFILE"
+        ANNOTATE_IN="docker cp $FUNCFILE \$CONTAINER:/home/builder/bench.func"
+        ANNOTATE_OUT="docker cp \$CONTAINER:/home/builder/bench.perf $PERFFILE"
     fi
     if [[ $LIB_VERSION == llvm ]] && [[ $COMPILER == clang* ]]; then
         BUILD_COMMAND=build-libcxx

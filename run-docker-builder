@@ -45,7 +45,7 @@ if [ "$CLEAN_CACHE" = true ] && [ -f "$OUTFILE" ]; then
     rm -f "$ASM"
     rm -f "$PP"
 fi
-if [ -f "$OUTFILE" ] && [[ $RECORD_PERF -eq false || -f $PERFFILE ]]; then
+if [ -f "$OUTFILE" ]; then
     >&2 echo "Showing cached results"
 else
     touch "$OUTFILE"
