@@ -22,7 +22,7 @@ describe('run docker with version', function () {
             options: {
                 compiler: version,
                 optim: 3,
-                cppVersion: 17,
+                cppVersion: "c++1z",
                 lib: "gnu"
             },
             isAnnotated: "true",
