@@ -10,6 +10,7 @@ VERSION_FLAG=$4
 RECORD_PERF=$5
 CLEAN_CACHE=$6
 LIB_VERSION=$7
+ADDITIONAL_FLAGS=${*:8}
 
 if ! [[ $COMPILER == "clang-"?*"."? || $COMPILER == "gcc-"?*"."? ]] ; then
     >&2 echo "Unknown compiler"
@@ -32,6 +33,14 @@ fi
 
 if [[ $VERSION_FLAG =~ c\+\+[0-9][0-9a-z] ]]; then
     VERSION="-std=${VERSION_FLAG}"
+else
+    >&2 echo "Unknown STD version"
+    exit 1
+fi
+
+if [[ $ADDITIONAL_FLAGS =~ \B(?!\-f) ]]; then
+    >&2 echo "Unsupported flag"
+    exit 1
 fi
 
 LOCK=$LOCAL_FILE.lock
@@ -70,7 +79,7 @@ else
     else
         BUILD_COMMAND=build
     fi
-    CONTAINER=$(docker create $ANNOTATE $MEMORY_LIMITS --cidfile="$CIDFILE" -t fredtingaud/quick-bench:"$COMPILER" /bin/bash -c "./$BUILD_COMMAND $OPTIM $VERSION && $ANNOTATE_RECORD ./run $ANNOTATE_CMD")
+    CONTAINER=$(docker create $ANNOTATE $MEMORY_LIMITS --cidfile="$CIDFILE" -t fredtingaud/quick-bench:"$COMPILER" /bin/bash -c "./$BUILD_COMMAND $OPTIM $VERSION $ADDITIONAL_FLAGS && $ANNOTATE_RECORD ./run $ANNOTATE_CMD")
     echo "$CONTAINER" > "$CONTAINERFILE"
     docker cp "$INFILE" "$CONTAINER":/home/builder/bench-file.cpp
     eval $ANNOTATE_IN

@@ -12,6 +12,7 @@ LIB_VERSION=$7
 FILE_NAME=$8.cpp
 RECORD_ASM=$9
 RECORD_PP=${10}
+ADDITIONAL_FLAGS=${*:11}
 
 if ! [[ $COMPILER == "clang-"?*"."? || $COMPILER == "gcc-"?*"."? ]] ; then
     >&2 echo "Unknown compiler"
@@ -28,6 +29,14 @@ fi
 
 if [[ $VERSION_FLAG =~ c\+\+[0-9][0-9a-z] ]]; then
     VERSION="-std=${VERSION_FLAG}"
+else
+    >&2 echo "Unknown STD version"
+    exit 1
+fi
+
+if [[ $ADDITIONAL_FLAGS =~ \B(?!\-f) ]]; then
+    >&2 echo "Unsupported flag"
+    exit 1
 fi
 
 LOCK=$LOCAL_FILE.lock
@@ -86,7 +95,7 @@ else
     CONTAINER=$(docker create $ANNOTATE $MEMORY_LIMITS \
                               --cidfile="$CIDFILE" \
                               $ENV_PARAMS \
-               fredtingaud/quick-bench:"$COMPILER" /bin/bash -c "./$PREBUILD_COMMAND $FILE_NAME $PREBUILD_PARAMS $OPTIM $VERSION && ./$BUILD_COMMAND $FILE_NAME $OPTIM $VERSION"
+               fredtingaud/quick-bench:"$COMPILER" /bin/bash -c "./$PREBUILD_COMMAND $FILE_NAME $PREBUILD_PARAMS $OPTIM $VERSION $ADDITIONAL_FLAGS && ./$BUILD_COMMAND $FILE_NAME $OPTIM $VERSION $ADDITIONAL_FLAGS"
     )
     echo "$CONTAINER" > "$CONTAINERFILE"
     docker cp "$INFILE" "$CONTAINER":/home/builder/"$FILE_NAME"

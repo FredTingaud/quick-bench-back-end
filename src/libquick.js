@@ -43,7 +43,7 @@ async function listContainers() {
 }
 
 function runDockerCommand(fileName, request) {
-    return './run-docker ' + fileName + ' ' + request.options.compiler + ' ' + request.options.optim + ' ' + request.options.cppVersion + ' ' + (request.isAnnotated || false) + ' ' + (request.force || false) + ' ' + (request.options.lib || 'gnu');
+    return './run-docker ' + fileName + ' ' + request.options.compiler + ' ' + request.options.optim + ' ' + request.options.cppVersion + ' ' + (request.isAnnotated || false) + ' ' + (request.force || false) + ' ' + (request.options.lib || 'gnu') + request.options.flags.join(' ');
 }
 
 function optionsToString(request) {
@@ -53,7 +53,8 @@ function optionsToString(request) {
         compiler: request.options.compiler,
         optim: request.options.optim,
         cppVersion: request.options.cppVersion,
-        lib: request.options.lib
+        lib: request.options.lib,
+        flags: request.options.flags,
     };
     return JSON.stringify(options);
 }
@@ -100,11 +101,13 @@ function groupResults(results) {
 function makeName(request) {
     if (request.protocolVersion === 1)
         return sha1(request.code + request.compiler + request.optim + request.cppVersion + request.protocolVersion);
-    else if (request.protocolVersion === 2)
+    if (request.protocolVersion === 2)
         return sha1(request.code + request.compiler + request.optim + request.cppVersion + request.isAnnotated + request.protocolVersion);
-    else if (request.protocolVersion === 3)
+    if (request.protocolVersion === 3)
         return sha1(request.code + request.compiler + request.optim + request.cppVersion + request.isAnnotated + request.protocolVersion + request.lib);
-    return sha1(request.code + request.options.compiler + request.options.optim + request.options.cppVersion + request.isAnnotated + request.protocolVersion + request.options.lib);
+    if (request.protocolVersion === 4)
+        return sha1(request.code + request.options.compiler + request.options.optim + request.options.cppVersion + request.isAnnotated + request.protocolVersion + request.options.lib);
+    return sha1(request.code + request.options.compiler + request.options.optim + request.options.cppVersion + request.isAnnotated + request.protocolVersion + request.options.lib + request.options.flags.join(' '));
 }
 
 function wrapCode(inputCode) {
