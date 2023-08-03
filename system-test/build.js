@@ -21,11 +21,12 @@ describe('run build-bench', function () {
         const request = {
             compiler: version,
             optim: 3,
-            cppVersion: 17,
+            cppVersion: 'c++1z',
             lib: "gnu",
             title: "cstdio",
             asm: "att",
-            withPP: true
+            withPP: true,
+            flags: []
         };
         expect(version).to.be.ok;
         const done = await libbuild.execute('system-test/build/test', request, 3, true);
