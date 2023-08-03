@@ -186,7 +186,8 @@ function makeOneRequest(done) {
         cppVersion: done.options.cppVersion,
         lib: done.options.lib,
         protocolVersion: done.options.protocolVersion,
-        title: done.title
+        title: done.title,
+        flags: done.options.flags,
     };
 }
 

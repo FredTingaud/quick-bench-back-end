@@ -191,7 +191,8 @@ function makeRequest(done) {
             compiler: done.options.compiler,
             optim: done.options.optim,
             cppVersion: done.options.cppVersion,
-            lib: done.options.lib
+            lib: done.options.lib,
+            flags: done.options.flags
         },
         isAnnotated: done.options.isAnnotated,
         protocolVersion: done.options.protocolVersion
