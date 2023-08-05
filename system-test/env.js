@@ -27,9 +27,9 @@ describe('check available flags', function() {
             timeout: 60000,
             killSignal: 'SIGKILL'
         };
-        const result = await new Promise((resolve, reject) => exec(`docker run --rm fredtingaud/quick-bench:${version} /bin/bash -c "./about-me"`, options, (err, stdout, stderr) => {
+        const result = await new Promise((resolve, reject) => exec(`docker run --rm -t fredtingaud/quick-bench:${version} /bin/bash -c "./about-me"`, options, (err, stdout, stderr) => {
             if (err) {
-                reject(stderr);
+                reject(stdout);
             } else {
                 resolve(stdout);
             }
