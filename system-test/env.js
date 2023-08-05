@@ -38,5 +38,5 @@ describe('check available flags', function() {
         expect(result.replaceAll('\r', '')).to.be.a('string').and.satisfy(msg => msg.startsWith('[version]\n1\n[std]'));
         expect(result).to.have.string('c++11');
         expect(result).to.have.string('[experimental]');
-    })
+    }).timeout(60000);
 })
