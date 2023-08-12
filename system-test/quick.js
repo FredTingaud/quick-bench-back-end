@@ -1,6 +1,6 @@
-const libquick = require('../src/libquick');
-const expect = require('chai').expect;
-const fs = require('fs');
+import * as libquick from '../src/libquick.js';
+import { expect } from 'chai';
+import fs from 'fs';
 
 const version = process.env.QB_VERSION;
 

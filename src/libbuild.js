@@ -1,8 +1,8 @@
-var exec = require('child_process').exec;
-var fs = require('fs');
-const tools = require('./tools');
-var sha1 = require('sha1');
-const docker = require('./docker');
+import { exec } from 'child_process';
+import fs from 'fs';
+import * as tools from './tools.js';
+import sha1 from 'sha1';
+import * as docker from './docker.js';
 
 var AVAILABLE_CONTAINERS = [];
 
@@ -213,14 +213,8 @@ function getEnv() {
     };
 }
 
-exports.updateAvailableContainersList = listContainers;
-exports.makeName = makeName;
-exports.groupResults = groupResults;
-exports.optionsToString = optionsToString;
-exports.execute = execute;
-exports.cleanFilename = cleanFilename;
-exports.makeBuildGraphResult = makeBuildGraphResult;
-exports.benchmark = benchmark;
-exports.reload = reload;
-exports.getRequestAndResult = getRequestAndResult;
-exports.getEnv = getEnv;
+export {
+    listContainers as updateAvailableContainersList,
+    makeName, groupResults, optionsToString, execute, cleanFilename, makeBuildGraphResult, benchmark, reload,
+    getRequestAndResult, getEnv
+};

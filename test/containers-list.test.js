@@ -1,6 +1,6 @@
-const app = require('../src/docker');
+import * as app from '../src/docker.js';
 
-var assert = require('assert');
+import assert from 'assert';
 
 
 

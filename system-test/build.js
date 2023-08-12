@@ -1,6 +1,6 @@
-const libbuild = require('../src/libbuild');
-const expect = require('chai').expect;
-const fs = require('fs');
+import * as libbuild from '../src/libbuild.js';
+import { expect } from 'chai';
+import fs from 'fs';
 
 const version = process.env.QB_VERSION;
 

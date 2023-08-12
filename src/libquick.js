@@ -1,8 +1,8 @@
-var exec = require('child_process').exec;
-var sha1 = require('sha1');
-var fs = require('fs');
-const tools = require('./tools');
-const docker = require('./docker');
+import { exec } from 'child_process';
+import sha1 from 'sha1';
+import fs from 'fs';
+import * as tools from './tools.js';
+import * as docker from './docker.js';
 
 const MAX_CODE_LENGTH = process.env.QB_CODE_LIMIT || 20000;
 const TIMEOUT = parseInt(process.env.QB_TIMEOUT, 10) < 0 ? 0 : (parseInt(process.env.QB_TIMEOUT, 10) || 120);
@@ -134,7 +134,7 @@ function unwrapCode(inputCode) {
 }
 
 function getFunctions(code) {
-    RE = /BENCHMARK\s*\(\s*([A-Za-z0-9_]+)\s*\)/g;
+    const RE = /BENCHMARK\s*\(\s*([A-Za-z0-9_]+)\s*\)/g;
     let content = '';
     let res;
     while ((res = RE.exec(code)) !== null) {
@@ -212,17 +212,8 @@ function getEnv() {
     };
 }
 
-exports.updateAvailableContainersList = listContainers;
-exports.makeName = makeName;
-exports.wrapCode = wrapCode;
-exports.unwrapCode = unwrapCode;
-exports.groupResults = groupResults;
-exports.getFunctions = getFunctions;
-exports.optionsToString = optionsToString;
-exports.execute = execute;
-exports.benchmark = benchmark;
-exports.makeGraphResult = makeGraphResult;
-exports.reload = reload;
-exports.makeRequest = makeRequest;
-exports.getRequestAndResult = getRequestAndResult;
-exports.getEnv = getEnv;
+export {
+    listContainers as updateAvailableContainersList,
+    makeName, wrapCode, unwrapCode, groupResults, getFunctions, optionsToString, execute, benchmark, makeGraphResult,
+    reload, makeRequest, getRequestAndResult, getEnv
+};

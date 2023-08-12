@@ -1,6 +1,6 @@
-﻿const libquick = require('../src/libquick');
+﻿import * as libquick from '../src/libquick.js';
 
-var assert = require('assert');
+import assert from 'assert';
 
 const startCode = `static void BM_StringCreation(benchmark::State& state) {
   while (state.KeepRunning())

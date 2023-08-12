@@ -1,10 +1,10 @@
-const expect = require('chai').expect;
+import { expect } from 'chai';
+import { exec } from 'child_process';
 
 const version = process.env.QB_VERSION;
 
 describe('check compiler version inside docker', function () {
     it('should have the same version', async () => {
-        const exec = require('child_process').exec;
         let options = {
             timeout: 60000,
             killSignal: 'SIGKILL'
@@ -20,9 +20,8 @@ describe('check compiler version inside docker', function () {
     }).timeout(60000);
 });
 
-describe('check available flags', function() {
-    it('should contain multiple standards', async() =>{
-        const exec = require('child_process').exec;
+describe('check available flags', function () {
+    it('should contain multiple standards', async () => {
         let options = {
             timeout: 60000,
             killSignal: 'SIGKILL'

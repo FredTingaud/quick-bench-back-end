@@ -1,5 +1,5 @@
-var exec = require('child_process').exec;
-const fetch = require('node-fetch');
+import { exec } from 'child_process';
+import fetch from 'node-fetch';
 
 const getToken = async () => {
     const response = await fetch('https://auth.docker.io/token?service=registry.docker.io&scope=repository:fredtingaud/quick-bench:pull');
@@ -125,8 +125,4 @@ async function deleteContainers(targetList) {
     await Promise.all(targetList.map(t => deleteOneContainer(t)));
 }
 
-exports.listContainers = listContainers;
-exports.readContainersList = readContainersList;
-exports.getTags = getTags;
-exports.loadContainers = loadContainers;
-exports.deleteContainers = deleteContainers;
+export { listContainers, readContainersList, getTags, loadContainers, deleteContainers };
