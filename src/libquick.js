@@ -100,8 +100,8 @@ function groupResults(results) {
     let parsedOptions = parseOptions(options);
     let disassemblyOption = "no"
     if (parsedOptions.disassemblyOption) {
-      disassemblyOption = parsedOptions.disassemblyOption;
-		}
+        disassemblyOption = parsedOptions.disassemblyOption;
+    }
     return { code: code, options: parseOptions(options), graph: JSON.parse(graph), annotation: annotation, disassemblyOption: disassemblyOption };
 }
 

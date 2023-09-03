@@ -26,7 +26,7 @@ describe('run docker with version', function () {
                 lib: "gnu",
                 flags: []
             },
-            isAnnotated: "true",
+            disassemblyOption: "att",
             force: "true"
         };
         expect(version).to.be.ok;
@@ -52,7 +52,7 @@ describe('run docker with version', function () {
                     lib: "llvm",
                     flags: []
                 },
-                isAnnotated: "true",
+                disassemblyOption: "att",
                 force: "true"
             };
             expect(version).to.be.ok;
