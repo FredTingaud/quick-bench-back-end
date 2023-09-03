@@ -1,8 +1,9 @@
 import { expect } from 'chai';
 import { exec } from 'child_process';
+import { fileURLToPath } from 'url';
 
 const version = process.env.QB_VERSION;
-const dirname = import.meta.url.replace('file:/');
+const dirname = fileURLToPath(import.meta.url);
 
 describe('check compiler version inside docker', function () {
     it('should have the same version', async () => {
