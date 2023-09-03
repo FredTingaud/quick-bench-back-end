@@ -3,7 +3,7 @@ import { exec } from 'child_process';
 import { fileURLToPath } from 'url';
 
 const version = process.env.QB_VERSION;
-const dirname = fileURLToPath(import.meta.url);
+const dirname = dirname(fileURLToPath(import.meta.url));
 
 describe('check compiler version inside docker', function () {
     it('should have the same version', async () => {
