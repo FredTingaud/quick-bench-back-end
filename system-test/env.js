@@ -2,6 +2,7 @@ import { expect } from 'chai';
 import { exec } from 'child_process';
 
 const version = process.env.QB_VERSION;
+const dirname = import.meta.url.replace('file:/');
 
 describe('check compiler version inside docker', function () {
     it('should have the same version', async () => {
@@ -9,7 +10,7 @@ describe('check compiler version inside docker', function () {
             timeout: 60000,
             killSignal: 'SIGKILL'
         };
-        const result = await new Promise((resolve, reject) => exec(`docker run --rm -v ${import.meta.url}/env/version.cpp:/home/builder/bench-file.cpp -t fredtingaud/quick-bench:${version} /bin/bash -c "./build && ./run"`, options, (err, stdout, stderr) => {
+        const result = await new Promise((resolve, reject) => exec(`docker run --rm -v ${dirname}/env/version.cpp:/home/builder/bench-file.cpp -t fredtingaud/quick-bench:${version} /bin/bash -c "./build && ./run"`, options, (err, stdout, stderr) => {
             if (err) {
                 reject(stderr);
             } else {
