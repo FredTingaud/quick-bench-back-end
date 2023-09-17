@@ -2,9 +2,10 @@
 
 import express from 'express';
 import cors from 'cors';
-import path from 'path';
+import { dirname, path} from 'path';
+const __dirname = dirname(fileURLToPath(import.meta.url));
 const app = express();
-app.use(express.static(path.join(import.meta.url, 'quick-bench-front-end', 'quick-bench', 'build')));
+app.use(express.static(path.join(__dirname, 'quick-bench-front-end', 'quick-bench', 'build')));
 import bodyParser from 'body-parser';
 import multer from 'multer';
 import * as libquick from './src/libquick.js';
@@ -74,7 +75,7 @@ app.delete('/containers/', upload.array(), function (req, res) {
 });
 
 app.get('/q/:id', upload.array(), function (req, res) {
-    res.sendFile(path.join(import.meta.url, 'quick-bench-front-end', 'quick-bench', 'build', 'index.html'));
+    res.sendFile(path.join(__dirname, 'quick-bench-front-end', 'quick-bench', 'build', 'index.html'));
 });
 
 app.get('/:id', upload.array(), function (req, res) {

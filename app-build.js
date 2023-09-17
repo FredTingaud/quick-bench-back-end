@@ -2,9 +2,10 @@
 
 import express from 'express';
 import cors from 'cors';
-import path from 'path';
+import {dirname, path} from 'path';
+const __dirname = dirname(fileURLToPath(import.meta.url));
 const app = express();
-app.use(express.static(path.join(import.meta.url, 'quick-bench-front-end', 'build-bench', 'build')));
+app.use(express.static(path.join(__dirname, 'quick-bench-front-end', 'build-bench', 'build')));
 import bodyParser from 'body-parser';
 import multer from 'multer';
 import * as libbuild from './src/libbuild.js';
@@ -12,7 +13,7 @@ import * as docker from './src/docker.js';
 
 const PORT = process.env.BB_PORT | 4000;
 
-var upload = multer();
+const upload = multer();
 
 app.use(bodyParser.json());
 app.use(cors());
@@ -77,7 +78,7 @@ app.get('/:id', upload.array(), function (req, res) {
 });
 
 app.get('/b/:id', upload.array(), function (req, res) {
-    res.sendFile(path.join(import.meta.url, 'quick-bench-front-end', 'build-bench', 'build', 'index.html'));
+    res.sendFile(path.join(__dirname, 'quick-bench-front-end', 'build-bench', 'build', 'index.html'));
 });
 
 app.listen(PORT, function () {
