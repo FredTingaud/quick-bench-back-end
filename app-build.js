@@ -2,8 +2,9 @@
 
 import express from 'express';
 import cors from 'cors';
-import {dirname, path} from 'path';
-const __dirname = dirname(fileURLToPath(import.meta.url));
+import path from 'path';
+import url from 'url';
+const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 const app = express();
 app.use(express.static(path.join(__dirname, 'quick-bench-front-end', 'build-bench', 'build')));
 import bodyParser from 'body-parser';
