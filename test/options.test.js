@@ -23,10 +23,11 @@ const request = {
         compiler: 'clang-5.0',
         optim: 3,
         cppVersion: 17,
-        lib: 'llvm'
+        lib: 'llvm',
+        flags: ['-ftesting']
     },
-    isAnnotated: true,
-    protocolVersion: 4
+    disassemblyOption: "att",
+    protocolVersion: 5
 };
 
 describe('Save options', function () {

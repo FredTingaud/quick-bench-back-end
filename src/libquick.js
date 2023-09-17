@@ -101,8 +101,12 @@ function groupResults(results) {
     let disassemblyOption = "no"
     if (parsedOptions.disassemblyOption) {
         disassemblyOption = parsedOptions.disassemblyOption;
+        delete parsedOptions.disassemblyOption;
+    } else if (parsedOptions.annotation) {
+        disassemblyOption = "att";
+        delete parsedOptions.annotation;
     }
-    return { code: code, options: parseOptions(options), graph: JSON.parse(graph), annotation: annotation, disassemblyOption: disassemblyOption };
+    return { code: code, options: parsedOptions, graph: JSON.parse(graph), annotation: annotation, disassemblyOption: disassemblyOption };
 }
 
 function makeName(request) {

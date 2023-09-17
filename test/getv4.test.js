@@ -111,13 +111,13 @@ BENCHMARK(BM_StringCopy);
             optim: "3",
             lib: "llvm"
         },
-        annotation: true,
         protocolVersion: 4
     },
+    disassemblyOption: "att",
     annotation: "Some annotations."
 };
 
-describe('group', function () {
+describe('Return v4 stored file', function () {
     it('should return a stable message with protocol 4', function () {
         return assert.deepEqual(libquick.groupResults([INPUT, OPTIONS, OUTPUT, ANNOTATION]), EXPECTED);
     });

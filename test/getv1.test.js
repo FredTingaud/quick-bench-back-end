@@ -109,10 +109,11 @@ BENCHMARK(BM_StringCopy);
         optim: "1",
         protocolVersion: 1
     },
-    annotation: null
+    disassemblyOption: "no",
+    annotation: undefined
 };
 
-describe('group', function () {
+describe('Return v1 stored file', function () {
     it('should return a stable message with protocol 1', function () {
         return assert.deepEqual(libquick.groupResults([INPUT, OPTIONS, OUTPUT]), EXPECTED);
     });

@@ -108,13 +108,13 @@ BENCHMARK(BM_StringCopy);
         compiler: "clang++-3.8",
         cppVersion: "17",
         optim: "1",
-        annotation: true,
         protocolVersion: 2
     },
+    disassemblyOption: "att",
     annotation: "Some annotations."
 };
 
-describe('group', function () {
+describe('Return v2 stored file', function () {
     it('should return a stable message with protocol 2', function () {
         return assert.deepEqual(libquick.groupResults([INPUT, OPTIONS, OUTPUT, ANNOTATION]), EXPECTED);
     });
