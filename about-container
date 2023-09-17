@@ -1,0 +1,3 @@
+#!/bin/bash
+
+docker run --rm -t fredtingaud/quick-bench:"$1" /bin/bash -c ./about-me

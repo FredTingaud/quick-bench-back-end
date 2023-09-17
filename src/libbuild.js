@@ -1,8 +1,8 @@
-var exec = require('child_process').exec;
-var fs = require('fs');
-const tools = require('./tools');
-var sha1 = require('sha1');
-const docker = require('./docker');
+import { exec } from 'child_process';
+import fs from 'fs';
+import * as tools from './tools.js';
+import sha1 from 'sha1';
+import * as docker from './docker.js';
 
 var AVAILABLE_CONTAINERS = [];
 
@@ -24,7 +24,7 @@ function cleanFilename(text) {
 }
 
 function runDockerCommand(fileName, request, force) {
-    return `./run-docker-builder ${fileName} ${request.compiler} ${request.optim} ${request.cppVersion} ${(request.isAnnotated || false)} ${(force || false)} ${(request.lib || 'gnu')} ${cleanFilename(request.title)} ${(request.asm || 'none')} ${(request.withPP || false)}`;
+    return `./run-docker-builder ${fileName} ${request.compiler} ${request.optim} ${request.cppVersion} ${(request.isAnnotated || false)} ${(force || false)} ${(request.lib || 'gnu')} ${cleanFilename(request.title)} ${(request.asm || 'none')} ${(request.withPP || false)} ${request.flags.join(' ')}`;
 }
 
 function optionsToString(request, protocolVersion) {
@@ -35,7 +35,8 @@ function optionsToString(request, protocolVersion) {
         "cppVersion": request.cppVersion,
         "lib": request.lib,
         "asm": request.asm,
-        "preprocessed": request.withPP
+        "preprocessed": request.withPP,
+        "flags": request.flags
     };
     return JSON.stringify(options);
 }
@@ -81,8 +82,12 @@ function groupResults(results, id, name) {
 }
 
 function makeCodeName(tab, protocolVersion) {
-    return sha1(tab.code + tab.compiler + tab.optim + tab.cppVersion + tab.lib + tab.withPP + tab.asm + protocolVersion);
+    if (protocolVersion === 4) {
+        return sha1(tab.code + tab.compiler + tab.optim + tab.cppVersion + tab.lib + tab.withPP + tab.asm + protocolVersion);
+    }
+    return sha1(tab.code + tab.compiler + tab.optim + tab.cppVersion + tab.lib + tab.withPP + tab.asm + protocolVersion + tab.flags.join(' '));
 }
+
 function makeName(request) {
     return sha1(request.tabs.reduce(u, curr => u + makeCodeName(curr, request.protocolVersion)) + request.protocolVersion);
 }
@@ -181,7 +186,8 @@ function makeOneRequest(done) {
         cppVersion: done.options.cppVersion,
         lib: done.options.lib,
         protocolVersion: done.options.protocolVersion,
-        title: done.title
+        title: done.title,
+        flags: done.options.flags,
     };
 }
 
@@ -207,14 +213,8 @@ function getEnv() {
     };
 }
 
-exports.updateAvailableContainersList = listContainers;
-exports.makeName = makeName;
-exports.groupResults = groupResults;
-exports.optionsToString = optionsToString;
-exports.execute = execute;
-exports.cleanFilename = cleanFilename;
-exports.makeBuildGraphResult = makeBuildGraphResult;
-exports.benchmark = benchmark;
-exports.reload = reload;
-exports.getRequestAndResult = getRequestAndResult;
-exports.getEnv = getEnv;
+export {
+    listContainers as updateAvailableContainersList,
+    makeName, groupResults, optionsToString, execute, cleanFilename, makeBuildGraphResult, benchmark, reload,
+    getRequestAndResult, getEnv
+};

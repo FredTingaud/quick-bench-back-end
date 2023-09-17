@@ -1,5 +1,5 @@
-var exec = require('child_process').exec;
-const fetch = require('node-fetch');
+import { exec } from 'child_process';
+import fetch from 'node-fetch';
 
 const getToken = async () => {
     const response = await fetch('https://auth.docker.io/token?service=registry.docker.io&scope=repository:fredtingaud/quick-bench:pull');
@@ -46,6 +46,32 @@ function sortContainers(c1, c2) {
     }
 }
 
+function describeContainer(name) {
+    return new Promise((resolve, reject) => {
+        return exec('./about-container ' + name, {}, (err, stdout, stderr) => {
+            if (err) {
+                reject(`Couldn't describe container for ${name}:\n${stderr}`);
+            } else {
+                let result = {name: name};
+                let title = '';
+                for (const l of stdout.split('\n')) {
+                    const line = l.trim();
+                    if (line === "") {
+                        continue;
+                    }
+                    if (line.startsWith('[') && line.endsWith(']')){
+                        title = line.substring(1, line.length - 1);
+                        result[title] = [];
+                    } else {
+                        result[title].push(line)
+                    }
+                }
+                resolve(result);
+            };
+        });
+    });
+}
+
 function readContainersList(stdout) {
     return stdout.split('\n').filter(Boolean).sort(sortContainers);
 }
@@ -56,11 +82,15 @@ function listContainers(target) {
             if (err) {
                 reject(stderr);
             } else {
-                target.push(...readContainersList(stdout));
-                resolve();
+                resolve(stdout);
             }
         });
-    });
+    }).then(stdout => {
+        return Promise.all(readContainersList(stdout).map(c => describeContainer(c)));
+    }).then(m => {
+        console.log(JSON.stringify(m));
+        target.push(...m);
+    }).catch(e => console.log(e));
 }
 
 function loadOneContainer(container) {
@@ -95,8 +125,4 @@ async function deleteContainers(targetList) {
     await Promise.all(targetList.map(t => deleteOneContainer(t)));
 }
 
-exports.listContainers = listContainers;
-exports.readContainersList = readContainersList;
-exports.getTags = getTags;
-exports.loadContainers = loadContainers;
-exports.deleteContainers = deleteContainers;
+export { listContainers, readContainersList, getTags, loadContainers, deleteContainers };

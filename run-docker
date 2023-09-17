@@ -2,92 +2,102 @@
 
 set -e
 
-LOCAL_FILE=`realpath $1`
+LOCAL_FILE=$(realpath "$1")
 
 COMPILER=$2
 OPTIM_FLAG=$3
 VERSION_FLAG=$4
-RECORD_PERF=$5
+ASM_FORMAT=$5
 CLEAN_CACHE=$6
 LIB_VERSION=$7
+ADDITIONAL_FLAGS=${*:8}
 
 if ! [[ $COMPILER == "clang-"?*"."? || $COMPILER == "gcc-"?*"."? ]] ; then
     >&2 echo "Unknown compiler"
     exit 1
 fi
 
-if [ $OPTIM_FLAG == 1 ]; then
+if [ "$OPTIM_FLAG" == 1 ]; then
     OPTIM="-O1"
-elif [ $OPTIM_FLAG == 2 ]; then
+elif [ "$OPTIM_FLAG" == 2 ]; then
     OPTIM="-O2"
-elif [ $OPTIM_FLAG == 3 ]; then
+elif [ "$OPTIM_FLAG" == 3 ]; then
     OPTIM="-O3"
-elif [ $3 == "S" ]; then
+elif [ "$OPTIM_FLAG" == "S" ]; then
     OPTIM="-Os"
-elif [ $3 == "G" ]; then
+elif [ "$OPTIM_FLAG" == "G" ]; then
     OPTIM="-Og"
-elif [ $3 == "F" ]; then
+elif [ "$OPTIM_FLAG" == "F" ]; then
     OPTIM="-Ofast"
+else
+    >&2 echo "Unsupported optimization flag"
+    exit 1
 fi
 
-if [ $VERSION_FLAG == 11 ]; then
-    VERSION="-std=c++11"
-elif [ $VERSION_FLAG == 14 ]; then
-    VERSION="-std=c++14"
-elif [ $VERSION_FLAG == 17 ]; then
-    VERSION="-std=c++1z"
-elif [ $VERSION_FLAG == 20 ]; then
-    VERSION="-std=c++2a"
+if [[ $VERSION_FLAG =~ c\+\+[0-9][0-9a-z] ]]; then
+    VERSION="-std=${VERSION_FLAG}"
 else
-    VERSION="-std=c++98 -Werror=c++11-extensions"
+    >&2 echo "Unknown STD version"
+    exit 1
+fi
+
+if [[ $ADDITIONAL_FLAGS =~ \B(?!\-f) ]]; then
+    >&2 echo "Unsupported flag"
+    exit 1
+fi
+
+if [[ $ASM_FORMAT =~ ^(?!(no|att|intel).)*$ ]]; then
+    >&2 echo "Unsupported ASM format"
+    exit 1
 fi
 
 LOCK=$LOCAL_FILE.lock
-lockfile $LOCK
+lockfile "$LOCK"
 INFILE=$LOCAL_FILE.cpp
 OUTFILE=$LOCAL_FILE.out
 CIDFILE=$LOCAL_FILE.cid
 PERFFILE=$LOCAL_FILE.perf
 FUNCFILE=$LOCAL_FILE.func
 CONTAINERFILE=$LOCAL_FILE.cont
-if [ $CLEAN_CACHE = true ] && [ -f $OUTFILE ]; then
-    rm $OUTFILE
-    rm -f $LOC_PERFFILE
+
+if [ "$CLEAN_CACHE" = true ] && [ -f "$OUTFILE" ]; then
+    rm "$OUTFILE"
+    rm -f "$PERFFILE"
 fi
-if [ -f $OUTFILE ] && ([ $RECORD_PERF = false ] || [ -f $LOC_PERFFILE ]); then
+if [ -f "$OUTFILE" ] && [[ "$RECORD_PERF" = false || -f "$PERFFILE" ]]; then
     >&2 echo "Showing cached results"
 else
-    touch $OUTFILE
-    chmod 666 $OUTFILE
+    touch "$OUTFILE"
+    chmod 666 "$OUTFILE"
 
-    if [ -z $UNLIMITED_RESOURCES ]; then
+    if [ -z "$UNLIMITED_RESOURCES" ]; then
         MEMORY_LIMITS='--memory=500m --cpu-period=100000 --cpu-quota=25000'
     fi
 
-    if [ $RECORD_PERF = true ]; then
-        touch $PERFFILE
-        chmod 666 $PERFFILE
+    if [ "${ASM_FORMAT}" != "no" ]; then
+        touch "$PERFFILE"
+        chmod 666 "$PERFFILE"
         ANNOTATE="--security-opt seccomp=seccomp.json"
-        ANNOTATE_CMD=" && ./annotate"
+        ANNOTATE_CMD=" && ./annotate -M${ASM_FORMAT}"
         ANNOTATE_RECORD="perf record -g"
-	ANNOTATE_IN="docker cp $FUNCFILE \$CONTAINER:/home/builder/bench.func"
-	ANNOTATE_OUT="docker cp \$CONTAINER:/home/builder/bench.perf $PERFFILE"
+        ANNOTATE_IN="docker cp $FUNCFILE \$CONTAINER:/home/builder/bench.func"
+        ANNOTATE_OUT="docker cp \$CONTAINER:/home/builder/bench.perf $PERFFILE"
     fi
     if [[ $LIB_VERSION == llvm ]] && [[ $COMPILER == clang* ]]; then
         BUILD_COMMAND=build-libcxx
     else
         BUILD_COMMAND=build
     fi
-    CONTAINER=$(docker create $ANNOTATE $MEMORY_LIMITS --cidfile=$CIDFILE -t fredtingaud/quick-bench:$COMPILER /bin/bash -c "./$BUILD_COMMAND $OPTIM $VERSION && $ANNOTATE_RECORD ./run $ANNOTATE_CMD")
-    echo $CONTAINER > $CONTAINERFILE
-    docker cp $INFILE $CONTAINER:/home/builder/bench-file.cpp
+    CONTAINER=$(docker create $ANNOTATE $MEMORY_LIMITS --cidfile="$CIDFILE" -t fredtingaud/quick-bench:"$COMPILER" /bin/bash -c "./$BUILD_COMMAND $OPTIM $VERSION $ADDITIONAL_FLAGS && $ANNOTATE_RECORD ./run $ANNOTATE_CMD")
+    echo "$CONTAINER" > "$CONTAINERFILE"
+    docker cp "$INFILE" "$CONTAINER":/home/builder/bench-file.cpp
     eval $ANNOTATE_IN
-    docker start -a $CONTAINER
-    docker cp $CONTAINER:/home/builder/bench.out $OUTFILE
+    docker start -a "$CONTAINER"
+    docker cp "$CONTAINER":/home/builder/bench.out "$OUTFILE"
     eval $ANNOTATE_OUT
-    docker rm $CONTAINER
-    rm $CONTAINERFILE
-    rm $CIDFILE
+    docker rm "$CONTAINER"
+    rm "$CONTAINERFILE"
+    rm "$CIDFILE"
 fi
 
-rm -f $LOCK
+rm -f "$LOCK"

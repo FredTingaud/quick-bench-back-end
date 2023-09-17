@@ -1,19 +1,19 @@
 #!/usr/bin/env node
 
-var express = require('express');
-var cors = require('cors');
-const path = require('path');
-var app = express();
-app.use(express.static(path.join(__dirname, 'quick-bench-front-end', 'quick-bench', 'build')));
-var bodyParser = require('body-parser');
-var multer = require('multer');
-var libquick = require('./src/libquick');
-var docker = require('./src/docker');
+import express from 'express';
+import cors from 'cors';
+import path from 'path';
+const app = express();
+app.use(express.static(path.join(import.meta.url, 'quick-bench-front-end', 'quick-bench', 'build')));
+import bodyParser from 'body-parser';
+import multer from 'multer';
+import * as libquick from './src/libquick.js';
+import * as docker from './src/docker.js';
 
 const PORT = process.env.QB_PORT | 4000;
 const POST_LIMIT = process.env.QB_POST_LIMIT | (100 * 1024);
 
-var upload = multer();
+const upload = multer();
 
 app.use(bodyParser.json({limit: POST_LIMIT}));
 app.use(cors());
@@ -26,7 +26,7 @@ app.get('/quick-env', upload.array(), function (req, res) {
 
 app.post('/quick', upload.array(), function (req, res) {
     Promise.resolve(libquick.benchmark(req.body, req.headers))
-        .then((done) => res.json(libquick.makeGraphResult(done.res ? JSON.parse(done.res) : null, done.stdout, done.id, done.annotation)))
+        .then((done) => res.json(libquick.makeGraphResult(done.res ? JSON.parse(done.res) : null, done.stdout, done.id, done.annotation, done.disassemblyOption)))
         .catch((err) => res.json({ message: err }));
 });
 
@@ -74,7 +74,7 @@ app.delete('/containers/', upload.array(), function (req, res) {
 });
 
 app.get('/q/:id', upload.array(), function (req, res) {
-    res.sendFile(path.join(__dirname, 'quick-bench-front-end', 'quick-bench', 'build', 'index.html'));
+    res.sendFile(path.join(import.meta.url, 'quick-bench-front-end', 'quick-bench', 'build', 'index.html'));
 });
 
 app.get('/:id', upload.array(), function (req, res) {

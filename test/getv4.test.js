@@ -1,6 +1,6 @@
-﻿const libquick = require('../src/libquick');
+﻿import * as libquick from '../src/libquick.js';
 
-var assert = require('assert');
+import assert from 'assert';
 
 const OPTIONS = '{"protocolVersion":4, "options":{"compiler":"clang++-9.0","optim":"3","cppVersion":"17","lib":"llvm"},"annotation":true}';
 const OUTPUT = `{

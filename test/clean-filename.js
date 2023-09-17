@@ -1,6 +1,6 @@
-﻿const app = require('../src/libbuild');
+﻿import * as app from '../src/libbuild.js';
 
-var assert = require('assert');
+import assert from 'assert';
 
 describe('clean unwanted characters', function () {
     it('should keep words', function () {

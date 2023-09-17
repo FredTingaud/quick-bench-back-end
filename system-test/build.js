@@ -1,6 +1,6 @@
-const libbuild = require('../src/libbuild');
-const expect = require('chai').expect;
-const fs = require('fs');
+import * as libbuild from '../src/libbuild.js';
+import { expect } from 'chai';
+import fs from 'fs';
 
 const version = process.env.QB_VERSION;
 
@@ -21,11 +21,12 @@ describe('run build-bench', function () {
         const request = {
             compiler: version,
             optim: 3,
-            cppVersion: 17,
+            cppVersion: 'c++1z',
             lib: "gnu",
             title: "cstdio",
             asm: "att",
-            withPP: true
+            withPP: true,
+            flags: []
         };
         expect(version).to.be.ok;
         const done = await libbuild.execute('system-test/build/test', request, 3, true);

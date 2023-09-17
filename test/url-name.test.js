@@ -1,7 +1,7 @@
-﻿const tools = require('../src/tools');
-const sha1 = require('sha1');
+﻿import * as tools from '../src/tools.js';
+import sha1 from 'sha1';
 
-var assert = require('assert');
+import assert from 'assert';
 
 const refId = '630d398cbd8e8c9d76bd3fb17ede3b77abe4302e';
 const refUrl = 'Yw05jL2OjJ12vT_xft47d6vkMC4';

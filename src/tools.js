@@ -1,4 +1,4 @@
-var fs = require('fs');
+import fs from 'fs';
 
 function write(fileName, code) {
     return new Promise((resolve, reject) => {
@@ -39,7 +39,4 @@ function decodeName(short) {
     return Buffer.from(short, 'base64').toString('hex');
 }
 
-exports.read = read;
-exports.write =  write;
-exports.encodeName =  encodeName;
-exports.decodeName = decodeName;
+export {read, write, encodeName, decodeName};

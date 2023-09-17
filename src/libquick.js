@@ -1,8 +1,8 @@
-var exec = require('child_process').exec;
-var sha1 = require('sha1');
-var fs = require('fs');
-const tools = require('./tools');
-const docker = require('./docker');
+import { exec } from 'child_process';
+import sha1 from 'sha1';
+import fs from 'fs';
+import * as tools from './tools.js';
+import * as docker from './docker.js';
 
 const MAX_CODE_LENGTH = process.env.QB_CODE_LIMIT || 20000;
 const TIMEOUT = parseInt(process.env.QB_TIMEOUT, 10) < 0 ? 0 : (parseInt(process.env.QB_TIMEOUT, 10) || 120);
@@ -43,17 +43,18 @@ async function listContainers() {
 }
 
 function runDockerCommand(fileName, request) {
-    return './run-docker ' + fileName + ' ' + request.options.compiler + ' ' + request.options.optim + ' ' + request.options.cppVersion + ' ' + (request.isAnnotated || false) + ' ' + (request.force || false) + ' ' + (request.options.lib || 'gnu');
+    return './run-docker ' + fileName + ' ' + request.options.compiler + ' ' + request.options.optim + ' ' + request.options.cppVersion + ' ' + (request.disassemblyOption || 'no') + ' ' + (request.force || false) + ' ' + (request.options.lib || 'gnu') + request.options.flags.join(' ');
 }
 
 function optionsToString(request) {
     let options = {
         protocolVersion: request.protocolVersion,
-        isAnnotated: request.isAnnotated,
+        disassemblyOption: request.disassemblyOption,
         compiler: request.options.compiler,
         optim: request.options.optim,
         cppVersion: request.options.cppVersion,
-        lib: request.options.lib
+        lib: request.options.lib,
+        flags: request.options.flags,
     };
     return JSON.stringify(options);
 }
@@ -74,11 +75,13 @@ function execute(fileName, request) {
             } else {
                 console.timeEnd(fileName);
                 console.log('Bench done ' + fileName + (stderr.indexOf('cached results') > -1 ? ' from cache' : ''));
+                const perfRecorded = !request.disassemblyOption.match("no")
                 resolve({
                     res: fs.readFileSync(fileName + '.out'),
                     stdout: stderr,
                     id: tools.encodeName(makeName(request)),
-                    annotation: request.isAnnotated ? fs.readFileSync(fileName + '.perf', 'utf8') : null
+                    annotation: perfRecorded? fs.readFileSync(fileName + '.perf', 'utf8') : null,
+										disassemblyOption: request.disassemblyOption,
                 });
             }
         });
@@ -94,17 +97,24 @@ function groupResults(results) {
     let options = results[1];
     let graph = results[2];
     let annotation = results[3];
-    return { code: code, options: parseOptions(options), graph: JSON.parse(graph), annotation: annotation };
+    let parsedOptions = parseOptions(options);
+    let disassemblyOption = "no"
+    if (parsedOptions.disassemblyOption) {
+        disassemblyOption = parsedOptions.disassemblyOption;
+    }
+    return { code: code, options: parseOptions(options), graph: JSON.parse(graph), annotation: annotation, disassemblyOption: disassemblyOption };
 }
 
 function makeName(request) {
     if (request.protocolVersion === 1)
         return sha1(request.code + request.compiler + request.optim + request.cppVersion + request.protocolVersion);
-    else if (request.protocolVersion === 2)
+    if (request.protocolVersion === 2)
         return sha1(request.code + request.compiler + request.optim + request.cppVersion + request.isAnnotated + request.protocolVersion);
-    else if (request.protocolVersion === 3)
+    if (request.protocolVersion === 3)
         return sha1(request.code + request.compiler + request.optim + request.cppVersion + request.isAnnotated + request.protocolVersion + request.lib);
-    return sha1(request.code + request.options.compiler + request.options.optim + request.options.cppVersion + request.isAnnotated + request.protocolVersion + request.options.lib);
+    if (request.protocolVersion === 4)
+        return sha1(request.code + request.options.compiler + request.options.optim + request.options.cppVersion + request.isAnnotated + request.protocolVersion + request.options.lib);
+    return sha1(request.code + request.options.compiler + request.options.optim + request.options.cppVersion + request.disassemblyOption + request.protocolVersion + request.options.lib + request.options.flags.join(' '));
 }
 
 function wrapCode(inputCode) {
@@ -131,7 +141,7 @@ function unwrapCode(inputCode) {
 }
 
 function getFunctions(code) {
-    RE = /BENCHMARK\s*\(\s*([A-Za-z0-9_]+)\s*\)/g;
+    const RE = /BENCHMARK\s*\(\s*([A-Za-z0-9_]+)\s*\)/g;
     let content = '';
     let res;
     while ((res = RE.exec(code)) !== null) {
@@ -166,7 +176,7 @@ async function reload(encodedName) {
     return groupResults(values);
 }
 
-function makeGraphResult(values, message, id, annotation) {
+function makeGraphResult(values, message, id, annotation, disassemblyOption) {
     let result = {};
     if (values) {
         result = { context: values.context };
@@ -178,7 +188,7 @@ function makeGraphResult(values, message, id, annotation) {
             };
         });
     }
-    return { result: result, message: message, id: id, annotation: annotation };
+    return { result: result, message: message, id: id, annotation: annotation, disassemblyOption: disassemblyOption};
 }
 
 function makeRequest(done) {
@@ -188,15 +198,16 @@ function makeRequest(done) {
             compiler: done.options.compiler,
             optim: done.options.optim,
             cppVersion: done.options.cppVersion,
-            lib: done.options.lib
+            lib: done.options.lib,
+            flags: done.options.flags
         },
-        isAnnotated: done.options.isAnnotated,
+        disassemblyOption: done.options.disassemblyOption,
         protocolVersion: done.options.protocolVersion
     };
 }
 function getRequestAndResult(done) {
     const request = makeRequest(done);
-    return Object.assign({ tab: request }, makeGraphResult(done.graph, '', tools.encodeName(makeName(request)), done.annotation));
+    return Object.assign({ tab: request }, makeGraphResult(done.graph, '', tools.encodeName(makeName(request)), done.annotation, done.disassemblyOption));
 }
 
 function getEnv() {
@@ -208,17 +219,8 @@ function getEnv() {
     };
 }
 
-exports.updateAvailableContainersList = listContainers;
-exports.makeName = makeName;
-exports.wrapCode = wrapCode;
-exports.unwrapCode = unwrapCode;
-exports.groupResults = groupResults;
-exports.getFunctions = getFunctions;
-exports.optionsToString = optionsToString;
-exports.execute = execute;
-exports.benchmark = benchmark;
-exports.makeGraphResult = makeGraphResult;
-exports.reload = reload;
-exports.makeRequest = makeRequest;
-exports.getRequestAndResult = getRequestAndResult;
-exports.getEnv = getEnv;
+export {
+    listContainers as updateAvailableContainersList,
+    makeName, wrapCode, unwrapCode, groupResults, getFunctions, optionsToString, execute, benchmark, makeGraphResult,
+    reload, makeRequest, getRequestAndResult, getEnv
+};

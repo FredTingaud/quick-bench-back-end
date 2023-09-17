@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 
-var express = require('express');
-var cors = require('cors');
-const path = require('path');
-var app = express();
-app.use(express.static(path.join(__dirname, 'quick-bench-front-end', 'build-bench', 'build')));
-var bodyParser = require('body-parser');
-var multer = require('multer');
-const libbuild = require('./src/libbuild');
-var docker = require('./src/docker');
+import express from 'express';
+import cors from 'cors';
+import path from 'path';
+const app = express();
+app.use(express.static(path.join(import.meta.url, 'quick-bench-front-end', 'build-bench', 'build')));
+import bodyParser from 'body-parser';
+import multer from 'multer';
+import * as libbuild from './src/libbuild.js';
+import * as docker from './src/docker.js';
 
 const PORT = process.env.BB_PORT | 4000;
 
@@ -77,7 +77,7 @@ app.get('/:id', upload.array(), function (req, res) {
 });
 
 app.get('/b/:id', upload.array(), function (req, res) {
-    res.sendFile(path.join(__dirname, 'quick-bench-front-end', 'build-bench', 'build', 'index.html'));
+    res.sendFile(path.join(import.meta.url, 'quick-bench-front-end', 'build-bench', 'build', 'index.html'));
 });
 
 app.listen(PORT, function () {

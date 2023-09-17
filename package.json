@@ -21,17 +21,17 @@
   "author": "Fred Tingaud",
   "license": "ISC",
   "dependencies": {
-    "body-parser": "^1.19.0",
+    "body-parser": "^1.20.2",
     "child_process": "^1.0.2",
     "cors": "^2.8.5",
-    "express": "^4.17.2",
-    "multer": "^1.4.4",
-    "node-fetch": "^2.6.7",
-    "request": "^2.88.2",
+    "express": "^4.18.2",
+    "multer": "^1.4.5-lts.1",
+    "node-fetch": "^3.3.2",
     "sha1": "^1.1.1"
   },
   "devDependencies": {
-    "chai": "^4.3.6",
-    "mocha": "^9.2.0"
-  }
+    "chai": "^4.3.8",
+    "mocha": "^10.2.0"
+  },
+  "type": "module"
 }
