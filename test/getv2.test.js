@@ -2,7 +2,7 @@
 
 import assert from 'assert';
 
-const OPTIONS = '{"protocolVersion":2,"compiler":"clang++-3.8","optim":"1","cppVersion":"17","annotation":true}';
+const OPTIONS = '{"protocolVersion":2,"compiler":"clang++-3.8","optim":"1","cppVersion":"17","isAnnotated":true}';
 const OUTPUT = `{
   "context": {
     "date": "2017-06-03 16:27:30",
@@ -106,7 +106,7 @@ BENCHMARK(BM_StringCopy);
     },
     options: {
         compiler: "clang++-3.8",
-        cppVersion: "17",
+        cppVersion: "c++17",
         optim: "1",
         protocolVersion: 2
     },
