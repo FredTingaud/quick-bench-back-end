@@ -88,8 +88,15 @@ function execute(fileName, request) {
     });
 }
 
-function parseOptions(options) {
-    return JSON.parse(options);
+function parseOptions(optionsString) {
+    let options = JSON.parse(optionsString);
+    if (options.cppVersion.length === 2) {
+        options.cppVersion = 'c++' + options.cppVersion;
+    }
+    if (!options.flags) {
+        options.flags = [];
+    }
+    return options;
 }
 
 function groupResults(results) {
@@ -105,9 +112,6 @@ function groupResults(results) {
     } else if (parsedOptions.isAnnotated) {
         disassemblyOption = "att";
         delete parsedOptions.isAnnotated;
-    }
-    if (parsedOptions.cppVersion.length === 2) {
-        parsedOptions.cppVersion = 'c++' + parsedOptions.cppVersion;
     }
     return { code: code, options: parsedOptions, graph: JSON.parse(graph), annotation: annotation, disassemblyOption: disassemblyOption };
 }
