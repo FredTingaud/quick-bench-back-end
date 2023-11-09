@@ -107,6 +107,7 @@ BENCHMARK(BM_StringCopy);
         compiler: "clang++-3.8",
         cppVersion: "c++17",
         optim: "1",
+        flags: [],
         protocolVersion: 1
     },
     disassemblyOption: "no",
