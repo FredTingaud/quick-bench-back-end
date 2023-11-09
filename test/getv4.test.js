@@ -2,7 +2,7 @@
 
 import assert from 'assert';
 
-const OPTIONS = '{"protocolVersion":4, "options":{"compiler":"clang++-9.0","optim":"3","cppVersion":"17","lib":"llvm"},"annotation":true}';
+const OPTIONS = '{"protocolVersion":4, "compiler":"clang-9.0","optim":"3","cppVersion":"17","lib":"llvm","isAnnotated":true}';
 const OUTPUT = `{
   "context": {
     "date": "2017-06-03 16:27:30",
@@ -105,12 +105,10 @@ BENCHMARK(BM_StringCopy);
         }
     },
     options: {
-        options: {
-            compiler: "clang++-9.0",
-            cppVersion: "17",
-            optim: "3",
-            lib: "llvm"
-        },
+        compiler: "clang-9.0",
+        cppVersion: "c++17",
+        optim: "3",
+        lib: "llvm",
         protocolVersion: 4
     },
     disassemblyOption: "att",

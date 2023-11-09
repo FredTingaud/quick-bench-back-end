@@ -102,9 +102,12 @@ function groupResults(results) {
     if (parsedOptions.disassemblyOption) {
         disassemblyOption = parsedOptions.disassemblyOption;
         delete parsedOptions.disassemblyOption;
-    } else if (parsedOptions.annotation) {
+    } else if (parsedOptions.isAnnotated) {
         disassemblyOption = "att";
-        delete parsedOptions.annotation;
+        delete parsedOptions.isAnnotated;
+    }
+    if (parsedOptions.cppVersion.length === 2) {
+        parsedOptions.cppVersion = 'c++' + parsedOptions.cppVersion;
     }
     return { code: code, options: parsedOptions, graph: JSON.parse(graph), annotation: annotation, disassemblyOption: disassemblyOption };
 }
