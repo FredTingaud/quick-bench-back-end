@@ -71,6 +71,17 @@ function execute(fileName, request, protocolVersion, force) {
     });
 }
 
+function loadOptions(optionString) {
+    let options = JSON.parse(optionString);
+    if (options.cppVersion.length === 2) {
+        options.cppVersion = 'c++' + options.cppVersion;
+    }
+    if (!options.flags) {
+        options.flags = [];
+    }
+    return options;
+}
+
 function groupResults(results, id, name) {
     let code = results[0];
     let options = results[1];
@@ -78,7 +89,7 @@ function groupResults(results, id, name) {
     let includes = results[3];
     let preprocessed = results[4];
     let asm = results[5];
-    return { code: code, options: JSON.parse(options), graph: graph, id: id, title: name, includes: includes, preprocessed: preprocessed, asm: asm };
+    return { code: code, options: loadOptions(options), graph: graph, id: id, title: name, includes: includes, preprocessed: preprocessed, asm: asm };
 }
 
 function makeCodeName(tab, protocolVersion) {
@@ -109,7 +120,8 @@ async function benchmarkOneBuild(tab, protocolVersion, force) {
         await tools.write(fileName + '.opt', optionsToString(tab, protocolVersion));
         return await execute(fileName, tab, protocolVersion, force);
     } catch (e) {
-        return { stdout: e };
+        console.log(e);
+        return Promise.reject('Unexpected error while processing the benchmark, please contact the website owner');
     }
 }
 
