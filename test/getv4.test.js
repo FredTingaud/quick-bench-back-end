@@ -109,6 +109,7 @@ BENCHMARK(BM_StringCopy);
         cppVersion: "c++17",
         optim: "3",
         lib: "llvm",
+        flags: [],
         protocolVersion: 4
     },
     disassemblyOption: "att",

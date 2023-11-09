@@ -2,7 +2,7 @@
 
 import assert from 'assert';
 
-const OPTIONS = '{"protocolVersion":3,"compiler":"clang-9.1","optim":"1","cppVersion":"17","isAnnotated":true,"lib":"llvm"}';
+const OPTIONS = '{"protocolVersion":5, "compiler":"clang-17.0","optim":"3","cppVersion":"c++17","lib":"llvm","flags":["-ftest"],"disassemblyOption":"att"}';
 const OUTPUT = `{
   "context": {
     "date": "2017-06-03 16:27:30",
@@ -105,19 +105,19 @@ BENCHMARK(BM_StringCopy);
         }
     },
     options: {
-        compiler: "clang-9.1",
+        compiler: "clang-17.0",
         cppVersion: "c++17",
-        optim: "1",
+        optim: "3",
         lib: "llvm",
-        flags: [],
-        protocolVersion: 3
+        flags: ["-ftest"],
+        protocolVersion: 5
     },
     disassemblyOption: "att",
     annotation: "Some annotations."
 };
 
-describe('Return v3 stored file', function () {
-    it('should return a stable message with protocol 3', function () {
+describe('Return v5 stored file', function () {
+    it('should return a stable message with protocol 5', function () {
         return assert.deepEqual(libquick.groupResults([INPUT, OPTIONS, OUTPUT, ANNOTATION]), EXPECTED);
     });
 });
