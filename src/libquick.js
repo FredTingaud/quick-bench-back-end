@@ -171,7 +171,8 @@ async function benchmark(request, header) {
         await tools.write(fileName + '.opt', optionsToString(request));
         return await execute(fileName, request);
     } catch (e) {
-        return { stdout: e };
+        console.log(e);
+        return Promise.reject('Unexpected error while processing the benchmark, please contact the website owner');
     }
 }
 
