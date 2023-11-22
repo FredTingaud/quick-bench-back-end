@@ -12,6 +12,13 @@ const ALLOW_CONTAINER_DOWNLOAD = process.env.ALLOW_CONTAINER_DOWNLOAD;
 
 const WRITE_PATH = '/data';
 
+class BenchError extends Error{
+    constructor(message) {
+        super(message);
+        this.name = "BenchError";
+    }
+}
+
 async function listContainers() {
     AVAILABLE_CONTAINERS = [];
     await docker.listContainers(AVAILABLE_CONTAINERS);
@@ -53,7 +60,7 @@ function execute(fileName, request, protocolVersion, force) {
                 console.timeEnd(fileName);
                 console.log('Bench failed ' + fileName);
                 exec("./kill-docker " + fileName);
-                reject("\u001b[0m\u001b[0;1;31mError or timeout\u001b[0m\u001b[1m<br>" + stdout + "<br>" + stderr);
+                reject(new BenchError("\u001b[0m\u001b[0;1;31mError or timeout\u001b[0m\u001b[1m<br>" + stdout + "<br>" + stderr));
             } else {
                 console.timeEnd(fileName);
                 console.log('Bench done ' + fileName + (stderr.indexOf('cached results') > -1 ? ' from cache' : ''));
@@ -120,8 +127,12 @@ async function benchmarkOneBuild(tab, protocolVersion, force) {
         await tools.write(fileName + '.opt', optionsToString(tab, protocolVersion));
         return await execute(fileName, tab, protocolVersion, force);
     } catch (e) {
-        console.log(e);
-        return Promise.reject('Unexpected error while processing the benchmark, please contact the website owner');
+        if (e instanceof BenchError) {
+            return { stdout: e.message };
+        } else {
+            console.log(e);
+            return Promise.reject('Unexpected error while processing the benchmark, please contact the website owner');
+        }
     }
 }
 
