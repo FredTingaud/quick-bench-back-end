@@ -37,6 +37,13 @@ BENCHMARK_MAIN();`;
 
 var AVAILABLE_CONTAINERS = [];
 
+class BenchError extends Error{
+    constructor(message) {
+        super(message);
+        this.name = "BenchError";
+    }
+}
+
 async function listContainers() {
     AVAILABLE_CONTAINERS = [];
     await docker.listContainers(AVAILABLE_CONTAINERS);
@@ -71,7 +78,7 @@ function execute(fileName, request) {
                 console.timeEnd(fileName);
                 console.log('Bench failed ' + fileName);
                 exec("./kill-docker " + fileName);
-                reject("\u001b[0m\u001b[0;1;31mError or timeout\u001b[0m\u001b[1m<br>" + stdout + "<br>" + stderr);
+                reject(new BenchError("\u001b[0m\u001b[0;1;31mError or timeout\u001b[0m\u001b[1m<br>" + stdout + "<br>" + stderr));
             } else {
                 console.timeEnd(fileName);
                 console.log('Bench done ' + fileName + (stderr.indexOf('cached results') > -1 ? ' from cache' : ''));
@@ -175,8 +182,12 @@ async function benchmark(request, header) {
         await tools.write(fileName + '.opt', optionsToString(request));
         return await execute(fileName, request);
     } catch (e) {
-        console.log(e);
-        return Promise.reject('Unexpected error while processing the benchmark, please contact the website owner');
+        if (e instanceof BenchError) {
+            return { stdout: e.message };
+        } else {
+            console.log(e);
+            return Promise.reject('Unexpected error while processing the benchmark, please contact the website owner');
+        }
     }
 }
 
