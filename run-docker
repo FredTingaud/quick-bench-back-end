@@ -17,7 +17,9 @@ if ! [[ $COMPILER == "clang-"?*"."? || $COMPILER == "gcc-"?*"."? ]] ; then
     exit 1
 fi
 
-if [ "$OPTIM_FLAG" == 1 ]; then
+if [ "$OPTIM_FLAG" == 0 ]; then
+    OPTIM=""
+elif [ "$OPTIM_FLAG" == 1 ]; then
     OPTIM="-O1"
 elif [ "$OPTIM_FLAG" == 2 ]; then
     OPTIM="-O2"
@@ -30,7 +32,7 @@ elif [ "$OPTIM_FLAG" == "G" ]; then
 elif [ "$OPTIM_FLAG" == "F" ]; then
     OPTIM="-Ofast"
 else
-    >&2 echo "Unsupported optimization flag"
+    >&2 echo "Unsupported optimization flag ${OPTIM_FLAG}"
     exit 1
 fi
 
