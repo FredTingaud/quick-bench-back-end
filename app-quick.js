@@ -18,6 +18,7 @@ const POST_LIMIT = process.env.QB_POST_LIMIT | (100 * 1024);
 const upload = multer();
 
 app.use(bodyParser.json({limit: POST_LIMIT}));
+app.use(bodyParser.urlencoded({ limit: POST_LIMIT, extended: true }));
 app.use(cors());
 
 libquick.updateAvailableContainersList();
